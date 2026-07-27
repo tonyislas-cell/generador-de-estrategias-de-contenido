@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "motion/react";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,10 +19,12 @@ export default function Home() {
           viral-content-kit
         </h1>
         <p className="max-w-sm text-sm text-muted-foreground">
-          Andamiaje del proyecto: Next.js, Tailwind, shadcn/ui, Motion y
-          Lucide funcionando.
+          Respondé el cuestionario y recibí tu kit de prompts para
+          estrategia de contenido.
         </p>
-        <Button>Todo listo</Button>
+        <Button asChild>
+          <Link href="/cuestionario">Empezar el cuestionario</Link>
+        </Button>
       </motion.div>
     </div>
   );
