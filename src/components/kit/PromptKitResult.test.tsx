@@ -6,7 +6,12 @@ vi.mock("@/lib/trends", () => ({
   getTrendsSnippet: vi.fn(),
 }));
 
+vi.mock("@/lib/usage", () => ({
+  incrementKitUsage: vi.fn(),
+}));
+
 import { getTrendsSnippet } from "@/lib/trends";
+import { incrementKitUsage } from "@/lib/usage";
 import { PromptKitResult } from "./PromptKitResult";
 import type { TrendsSnippet } from "@/lib/trends/types";
 import type { WizardAnswers } from "@/lib/wizard/types";
@@ -36,10 +41,13 @@ const FIXTURE_SNIPPET: TrendsSnippet = {
 
 const noop = () => {};
 const mockGetTrendsSnippet = getTrendsSnippet as Mock;
+const mockIncrementKitUsage = incrementKitUsage as Mock;
 
 describe("PromptKitResult", () => {
   beforeEach(() => {
     mockGetTrendsSnippet.mockReset();
+    mockIncrementKitUsage.mockReset();
+    mockIncrementKitUsage.mockResolvedValue(undefined);
   });
 
   it("renders the setup block followed by both weekly blocks, in order", async () => {
@@ -201,5 +209,38 @@ describe("PromptKitResult", () => {
       await screen.findByRole("heading", { name: "Prompt 1 — Configuración" })
     ).toBeInTheDocument();
     expect(mockGetTrendsSnippet).toHaveBeenCalledTimes(2);
+  });
+
+  it("counts one use once the kit is ready", async () => {
+    mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
+    render(
+      <PromptKitResult
+        answers={COMPLETE}
+        duracion="14_dias"
+        onBack={noop}
+        onRestart={noop}
+      />
+    );
+
+    await screen.findByRole("heading", { name: "Prompt 1 — Configuración" });
+
+    expect(mockIncrementKitUsage).toHaveBeenCalledTimes(1);
+  });
+
+  it("still shows the kit even if counting the use fails", async () => {
+    mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
+    mockIncrementKitUsage.mockRejectedValue(new Error("network error"));
+    render(
+      <PromptKitResult
+        answers={COMPLETE}
+        duracion="14_dias"
+        onBack={noop}
+        onRestart={noop}
+      />
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "Prompt 1 — Configuración" })
+    ).toBeInTheDocument();
   });
 });

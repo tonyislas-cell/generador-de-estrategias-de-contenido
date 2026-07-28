@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getTrendsSnippet } from "@/lib/trends";
+import { incrementKitUsage } from "@/lib/usage";
 import { generatePromptKit } from "@/lib/prompt-kit/generatePromptKit";
 import { resolvePlataformaPrincipal, toKitAnswers } from "@/lib/prompt-kit/kit-answers";
 import {
@@ -57,6 +58,9 @@ export function PromptKitResult({
           status: "ready",
           kit: generatePromptKit(kitAnswers, trends, MODELO, duracion),
         });
+        // El contador es un extra de la landing, no parte del flujo del
+        // kit: si falla, no debe romper ni avisarle nada al usuario.
+        incrementKitUsage().catch(() => {});
       })
       .catch(() => {
         if (cancelled) return;
