@@ -1,6 +1,14 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Mock } from "vitest";
+
+vi.mock("@/lib/trends", () => ({
+  getTrendsSnippet: vi.fn(),
+}));
+
+import { getTrendsSnippet } from "@/lib/trends";
 import { PromptKitResult } from "./PromptKitResult";
+import type { TrendsSnippet } from "@/lib/trends/types";
 import type { WizardAnswers } from "@/lib/wizard/types";
 
 const COMPLETE: WizardAnswers = {
@@ -16,10 +24,26 @@ const COMPLETE: WizardAnswers = {
   estilosGancho: ["curiosidad"],
 };
 
+const FIXTURE_SNIPPET: TrendsSnippet = {
+  plataforma: "tiktok",
+  periodo: "línea base de prueba",
+  formatos: ["Formato de prueba"],
+  ganchos: ["Gancho de prueba"],
+  senales: ["Señal de prueba"],
+  evitar: ["Evitar de prueba"],
+  convencionesCopy: "Copy de prueba",
+};
+
 const noop = () => {};
+const mockGetTrendsSnippet = getTrendsSnippet as Mock;
 
 describe("PromptKitResult", () => {
-  it("renders the setup block followed by both weekly blocks, in order", () => {
+  beforeEach(() => {
+    mockGetTrendsSnippet.mockReset();
+  });
+
+  it("renders the setup block followed by both weekly blocks, in order", async () => {
+    mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
     render(
       <PromptKitResult
         answers={COMPLETE}
@@ -29,9 +53,9 @@ describe("PromptKitResult", () => {
       />
     );
 
-    const titulos = screen
-      .getAllByRole("heading", { level: 3 })
-      .map((heading) => heading.textContent);
+    const titulos = (
+      await screen.findAllByRole("heading", { level: 3 })
+    ).map((heading) => heading.textContent);
 
     expect(titulos).toEqual([
       "Prompt 1 — Configuración",
@@ -40,7 +64,8 @@ describe("PromptKitResult", () => {
     ]);
   });
 
-  it("renders four weekly blocks for a one-month plan", () => {
+  it("renders four weekly blocks for a one-month plan", async () => {
+    mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
     render(
       <PromptKitResult
         answers={COMPLETE}
@@ -50,9 +75,9 @@ describe("PromptKitResult", () => {
       />
     );
 
-    const titulos = screen
-      .getAllByRole("heading", { level: 3 })
-      .map((heading) => heading.textContent);
+    const titulos = (
+      await screen.findAllByRole("heading", { level: 3 })
+    ).map((heading) => heading.textContent);
 
     expect(titulos).toEqual([
       "Prompt 1 — Configuración",
@@ -61,12 +86,13 @@ describe("PromptKitResult", () => {
       "Prompt 4 — Semana 3",
       "Prompt 5 — Semana 4",
     ]);
-    expect(screen.getByRole("banner")).toHaveTextContent(
+    expect(await screen.findByRole("banner")).toHaveTextContent(
       "Plan de 1 mes · TikTok · para Claude"
     );
   });
 
-  it("separates the setup block from the weekly blocks", () => {
+  it("separates the setup block from the weekly blocks", async () => {
+    mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
     render(
       <PromptKitResult
         answers={COMPLETE}
@@ -77,14 +103,15 @@ describe("PromptKitResult", () => {
     );
 
     expect(
-      screen.getByRole("region", { name: "Prompt de configuración" })
+      await screen.findByRole("region", { name: "Prompt de configuración" })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("region", { name: "Bloques semanales" })
     ).toBeInTheDocument();
   });
 
-  it("gives every block its own copy button", () => {
+  it("gives every block its own copy button", async () => {
+    mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
     render(
       <PromptKitResult
         answers={COMPLETE}
@@ -94,10 +121,13 @@ describe("PromptKitResult", () => {
       />
     );
 
-    expect(screen.getAllByRole("button", { name: "Copiar" })).toHaveLength(3);
+    expect(
+      await screen.findAllByRole("button", { name: "Copiar" })
+    ).toHaveLength(3);
   });
 
-  it("names the platform and target model the kit was built for", () => {
+  it("names the platform and target model the kit was built for", async () => {
+    mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
     render(
       <PromptKitResult
         answers={COMPLETE}
@@ -109,12 +139,12 @@ describe("PromptKitResult", () => {
 
     // Scoped to the header on purpose: the platform name also appears inside
     // the prompt text itself, so an unscoped query matches several nodes.
-    expect(screen.getByRole("banner")).toHaveTextContent(
+    expect(await screen.findByRole("banner")).toHaveTextContent(
       "Plan de 14 días · TikTok · para Claude"
     );
   });
 
-  it("shows a recoverable message instead of prompts when answers are incomplete", () => {
+  it("shows a recoverable message instead of prompts when answers are incomplete, without touching the network", () => {
     const onBack = vi.fn();
     render(
       <PromptKitResult
@@ -132,5 +162,44 @@ describe("PromptKitResult", () => {
     expect(
       screen.getByRole("button", { name: "Volver al resumen" })
     ).toBeInTheDocument();
+    expect(mockGetTrendsSnippet).not.toHaveBeenCalled();
+  });
+
+  it("shows a loading state while the trends fetch is in flight", () => {
+    mockGetTrendsSnippet.mockReturnValue(new Promise(() => {}));
+    render(
+      <PromptKitResult
+        answers={COMPLETE}
+        duracion="14_dias"
+        onBack={noop}
+        onRestart={noop}
+      />
+    );
+
+    expect(screen.getByText("Cargando...")).toBeInTheDocument();
+  });
+
+  it("shows a recoverable error state when the trends fetch fails, and recovers on retry", async () => {
+    mockGetTrendsSnippet.mockRejectedValueOnce(new Error("network error"));
+    render(
+      <PromptKitResult
+        answers={COMPLETE}
+        duracion="14_dias"
+        onBack={noop}
+        onRestart={noop}
+      />
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "No pudimos cargar las tendencias" })
+    ).toBeInTheDocument();
+
+    mockGetTrendsSnippet.mockResolvedValueOnce(FIXTURE_SNIPPET);
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+
+    expect(
+      await screen.findByRole("heading", { name: "Prompt 1 — Configuración" })
+    ).toBeInTheDocument();
+    expect(mockGetTrendsSnippet).toHaveBeenCalledTimes(2);
   });
 });

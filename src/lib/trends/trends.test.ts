@@ -1,52 +1,42 @@
-import { describe, expect, it } from "vitest";
-import { getTrendsSnippet, TRENDS_BY_PLATAFORMA } from "./index";
-import { PLATAFORMA_OPTIONS } from "@/lib/wizard/options";
+import { describe, expect, it, vi } from "vitest";
 import type { TrendsSnippet } from "./types";
 
-const allLines = (snippet: TrendsSnippet): string[] => [
-  ...snippet.formatos,
-  ...snippet.ganchos,
-  ...snippet.senales,
-  ...snippet.evitar,
-];
+const getByPlatform = vi.fn();
+
+vi.mock("./repository", () => ({
+  trendsRepository: { getByPlatform: (...args: unknown[]) => getByPlatform(...args) },
+}));
+
+const { getTrendsSnippet } = await import("./index");
+
+const SNIPPET: TrendsSnippet = {
+  plataforma: "tiktok",
+  periodo: "línea base",
+  formatos: ["formato 1"],
+  ganchos: ["gancho 1"],
+  senales: ["senal 1"],
+  evitar: ["evitar 1"],
+  convencionesCopy: "copy de prueba",
+};
 
 describe("getTrendsSnippet", () => {
-  it("returns a snippet for every platform offered in the questionnaire", () => {
-    for (const option of PLATAFORMA_OPTIONS) {
-      const snippet = getTrendsSnippet(option.value);
+  it("resolves the snippet the repository returns, unchanged", async () => {
+    getByPlatform.mockResolvedValueOnce(SNIPPET);
 
-      expect(snippet.plataforma).toBe(option.value);
-      expect(snippet.periodo).not.toBe("");
-      expect(snippet.convencionesCopy).not.toBe("");
-    }
+    await expect(getTrendsSnippet("tiktok")).resolves.toEqual(SNIPPET);
+    expect(getByPlatform).toHaveBeenCalledWith("tiktok");
   });
 
-  it("gives every platform content in all four trend categories", () => {
-    for (const option of PLATAFORMA_OPTIONS) {
-      const snippet = getTrendsSnippet(option.value);
+  it("rejects with a clear message when the repository has no row for the platform", async () => {
+    getByPlatform.mockResolvedValueOnce(null);
 
-      expect(snippet.formatos.length).toBeGreaterThan(0);
-      expect(snippet.ganchos.length).toBeGreaterThan(0);
-      expect(snippet.senales.length).toBeGreaterThan(0);
-      expect(snippet.evitar.length).toBeGreaterThan(0);
-    }
+    await expect(getTrendsSnippet("linkedin")).rejects.toThrow(/linkedin/);
   });
 
-  // Guards the "no other platform's trends leak into the kit" test in
-  // generatePromptKit.test.ts: that test is only meaningful while every trend
-  // line is unique to a single platform.
-  it("never repeats a trend line across two platforms", () => {
-    const seen = new Map<string, string>();
+  it("propagates a repository failure instead of swallowing it", async () => {
+    const failure = new Error("network error");
+    getByPlatform.mockRejectedValueOnce(failure);
 
-    for (const [plataforma, snippet] of Object.entries(TRENDS_BY_PLATAFORMA)) {
-      for (const linea of allLines(snippet)) {
-        const previousOwner = seen.get(linea);
-        expect(
-          previousOwner,
-          `"${linea}" appears in both ${previousOwner} and ${plataforma}`
-        ).toBeUndefined();
-        seen.set(linea, plataforma);
-      }
-    }
+    await expect(getTrendsSnippet("youtube_shorts")).rejects.toBe(failure);
   });
 });

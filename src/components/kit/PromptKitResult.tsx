@@ -1,11 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getTrendsSnippet } from "@/lib/trends";
 import { generatePromptKit } from "@/lib/prompt-kit/generatePromptKit";
 import { resolvePlataformaPrincipal, toKitAnswers } from "@/lib/prompt-kit/kit-answers";
-import { DURACION_CONFIG, type Duracion, type ModeloIA } from "@/lib/prompt-kit/types";
+import {
+  DURACION_CONFIG,
+  type Duracion,
+  type ModeloIA,
+  type PromptKit,
+} from "@/lib/prompt-kit/types";
 import { NOMBRE_DE_MODELO } from "@/lib/prompt-kit/adapters";
 import { plataformaLabel } from "@/lib/wizard/labels";
 import type { WizardAnswers } from "@/lib/wizard/types";
@@ -16,6 +21,11 @@ import { PromptBlockCard } from "./PromptBlockCard";
  * igual que `duracion` ya lo es.
  */
 const MODELO: ModeloIA = "claude";
+
+type FetchState =
+  | { status: "loading" }
+  | { status: "error" }
+  | { status: "ready"; kit: PromptKit };
 
 interface PromptKitResultProps {
   answers: WizardAnswers;
@@ -30,23 +40,39 @@ export function PromptKitResult({
   onBack,
   onRestart,
 }: PromptKitResultProps) {
-  const kit = useMemo(() => {
-    const kitAnswers = toKitAnswers(answers);
-    if (!kitAnswers) return null;
+  const kitAnswers = useMemo(() => toKitAnswers(answers), [answers]);
+  const [state, setState] = useState<FetchState>({ status: "loading" });
+  const [retryToken, setRetryToken] = useState(0);
 
+  useEffect(() => {
+    if (!kitAnswers) return;
+
+    let cancelled = false;
     const plataforma = resolvePlataformaPrincipal(kitAnswers);
-    return generatePromptKit(
-      kitAnswers,
-      getTrendsSnippet(plataforma),
-      MODELO,
-      duracion
-    );
-  }, [answers, duracion]);
+
+    getTrendsSnippet(plataforma)
+      .then((trends) => {
+        if (cancelled) return;
+        setState({
+          status: "ready",
+          kit: generatePromptKit(kitAnswers, trends, MODELO, duracion),
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setState({ status: "error" });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [kitAnswers, duracion, retryToken]);
 
   // `loadWizardState` valida la forma de manera laxa, así que un estado viejo o
   // editado a mano puede llegar hasta acá sin respuestas. Mejor decirlo que
-  // romper o generar un prompt con huecos.
-  if (!kit) {
+  // romper o generar un prompt con huecos. Se resuelve antes del efecto, así
+  // que este camino nunca llega a pedir tendencias por red.
+  if (!kitAnswers) {
     return (
       <div className="mx-auto grid w-full max-w-xl flex-1 content-start gap-4 px-6 py-12">
         <h1 className="text-xl font-semibold text-foreground">
@@ -65,6 +91,42 @@ export function PromptKitResult({
       </div>
     );
   }
+
+  if (state.status === "loading") {
+    return (
+      <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+        Cargando...
+      </div>
+    );
+  }
+
+  if (state.status === "error") {
+    return (
+      <div className="mx-auto grid w-full max-w-xl flex-1 content-start gap-4 px-6 py-12">
+        <h1 className="text-xl font-semibold text-foreground">
+          No pudimos cargar las tendencias
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Hubo un problema de conexión. Intenta de nuevo.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <Button
+            onClick={() => {
+              setState({ status: "loading" });
+              setRetryToken((token) => token + 1);
+            }}
+          >
+            Reintentar
+          </Button>
+          <Button variant="ghost" onClick={onBack}>
+            Volver al resumen
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const kit = state.kit;
 
   return (
     <div className="mx-auto grid w-full max-w-2xl flex-1 content-start gap-8 px-6 py-12">

@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { generatePromptKit } from "./generatePromptKit";
 import { getBloquesEnOrden, type Duracion, type PromptKit } from "./types";
 import { toKitAnswers } from "./kit-answers";
-import { getTrendsSnippet, TRENDS_BY_PLATAFORMA } from "@/lib/trends";
-import type { WizardAnswers } from "@/lib/wizard/types";
+import type { TrendsSnippet } from "@/lib/trends/types";
+import type { Plataforma, WizardAnswers } from "@/lib/wizard/types";
 
 const BASE: WizardAnswers = {
   nicho: "Finanzas personales",
@@ -18,7 +18,52 @@ const BASE: WizardAnswers = {
   estilosGancho: ["curiosidad"],
 };
 
-/** Construye un kit desde respuestas crudas, resolviendo tendencias como lo hace la app. */
+/**
+ * Fixtures locales, desacopladas de Supabase: `generatePromptKit` es una
+ * función pura que recibe el snippet como parámetro, así que este test no
+ * necesita tocar la red. El contenido no tiene que ser real, solo distinto
+ * entre plataformas para que el test de fuga entre plataformas sea válido.
+ */
+const SNIPPET_BY_PLATAFORMA: Record<Plataforma, TrendsSnippet> = {
+  tiktok: {
+    plataforma: "tiktok",
+    periodo: "línea base de prueba",
+    formatos: ["Formato tiktok A", "Formato tiktok B"],
+    ganchos: ["Gancho tiktok A"],
+    senales: ["Señal tiktok A"],
+    evitar: ["Evitar tiktok A"],
+    convencionesCopy: "Convenciones de copy de tiktok",
+  },
+  instagram_reels: {
+    plataforma: "instagram_reels",
+    periodo: "línea base de prueba",
+    formatos: ["Formato reels A", "Formato reels B"],
+    ganchos: ["Gancho reels A"],
+    senales: ["Señal reels A"],
+    evitar: ["Evitar reels A"],
+    convencionesCopy: "Convenciones de copy de reels",
+  },
+  youtube_shorts: {
+    plataforma: "youtube_shorts",
+    periodo: "línea base de prueba",
+    formatos: ["Formato shorts A", "Formato shorts B"],
+    ganchos: ["Gancho shorts A"],
+    senales: ["Señal shorts A"],
+    evitar: ["Evitar shorts A"],
+    convencionesCopy: "Convenciones de copy de shorts",
+  },
+  linkedin: {
+    plataforma: "linkedin",
+    periodo: "línea base de prueba",
+    formatos: ["Formato linkedin A", "Formato linkedin B"],
+    ganchos: ["Gancho linkedin A"],
+    senales: ["Señal linkedin A"],
+    evitar: ["Evitar linkedin A"],
+    convencionesCopy: "Convenciones de copy de linkedin",
+  },
+};
+
+/** Construye un kit desde respuestas crudas, usando fixtures de tendencias locales en vez de Supabase. */
 function buildKit(
   overrides: Partial<WizardAnswers> = {},
   duracion: Duracion = "14_dias"
@@ -28,7 +73,7 @@ function buildKit(
 
   return generatePromptKit(
     answers,
-    getTrendsSnippet(answers.plataformas[0]),
+    SNIPPET_BY_PLATAFORMA[answers.plataformas[0]],
     "claude",
     duracion
   );
@@ -69,7 +114,7 @@ describe("generatePromptKit", () => {
 
   it("inserts the trends snippet for the chosen platform into the setup prompt", () => {
     const kit = buildKit({ plataformas: ["linkedin"] });
-    const snippet = TRENDS_BY_PLATAFORMA.linkedin;
+    const snippet = SNIPPET_BY_PLATAFORMA.linkedin;
 
     for (const linea of [...snippet.formatos, ...snippet.ganchos, ...snippet.senales, ...snippet.evitar]) {
       expect(kit.setup.contenido).toContain(linea);
@@ -82,7 +127,7 @@ describe("generatePromptKit", () => {
     const kit = buildKit({ plataformas: ["tiktok"] });
     const texto = textoCompleto(kit);
 
-    for (const [plataforma, snippet] of Object.entries(TRENDS_BY_PLATAFORMA)) {
+    for (const [plataforma, snippet] of Object.entries(SNIPPET_BY_PLATAFORMA)) {
       if (plataforma === "tiktok") continue;
 
       for (const linea of [...snippet.formatos, ...snippet.ganchos, ...snippet.senales, ...snippet.evitar]) {
