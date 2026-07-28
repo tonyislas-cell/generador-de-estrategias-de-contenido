@@ -32,7 +32,7 @@ describe("getSummaryItems", () => {
       oferta: "Curso de finanzas",
     });
 
-    expect(items.map((i) => i.label)).not.toContain("Qué vendés");
+    expect(items.map((i) => i.label)).not.toContain("Qué vendes");
   });
 
   it("includes the oferta fields when objetivo is lanzamiento", () => {
@@ -44,7 +44,7 @@ describe("getSummaryItems", () => {
     });
 
     const byLabel = Object.fromEntries(items.map((i) => [i.label, i.value]));
-    expect(byLabel["Qué vendés"]).toBe("Curso de finanzas");
+    expect(byLabel["Qué vendes"]).toBe("Curso de finanzas");
     expect(byLabel["Objeciones comunes"]).toBe("No tengo tiempo");
     expect(byLabel["Prueba social"]).toBe("200 alumnos");
   });

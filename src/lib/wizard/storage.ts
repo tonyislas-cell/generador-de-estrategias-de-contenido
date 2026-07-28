@@ -1,10 +1,16 @@
-import type { StepId, WizardAnswers } from "./types";
+import type { WizardAnswers, WizardPosition } from "./types";
 
 const STORAGE_KEY = "viral-content-kit:wizard:v1";
 
 export interface StoredWizardState {
   answers: WizardAnswers;
-  currentStepId: StepId | "summary";
+  /**
+   * El nombre del campo se conserva aunque ahora también admita "result":
+   * está persistido, y renombrarlo obligaría a migrar datos guardados sin
+   * ganar nada. Los valores viejos siguen siendo válidos, así que la clave
+   * `:v1` tampoco necesita subir de versión.
+   */
+  currentStepId: WizardPosition;
 }
 
 function isStoredWizardState(value: unknown): value is StoredWizardState {

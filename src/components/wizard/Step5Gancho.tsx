@@ -8,8 +8,8 @@ export function Step5Gancho({ answers, onChange }: StepProps) {
     <div className="grid gap-2">
       <Label>¿Qué tipo de ganchos resuenan con tu estilo?</Label>
       <p className="text-sm text-muted-foreground">
-        Podés elegir más de uno — combinamos esto con las tendencias
-        vigentes de tu plataforma.
+        Puedes elegir más de uno — combinamos esto con las mecánicas que
+        mejor funcionan en tu plataforma.
       </p>
       <CheckboxGroup
         name="estilosGancho"

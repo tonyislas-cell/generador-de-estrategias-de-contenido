@@ -122,4 +122,68 @@ describe("useWizard", () => {
     expect(reloaded.result.current.answers).toEqual({});
     expect(reloaded.result.current.currentStep?.id).toBe("contexto");
   });
+
+  it("goNext from the summary reaches the result status", async () => {
+    const { result } = renderHook(() => useWizard());
+    await waitFor(() => expect(result.current.status).toBe("in-progress"));
+
+    act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
+    for (let i = 0; i < 5; i++) act(() => result.current.goNext());
+    expect(result.current.status).toBe("summary");
+
+    act(() => result.current.goNext());
+
+    expect(result.current.status).toBe("result");
+  });
+
+  it("reports no current step while on the result screen", async () => {
+    const { result } = renderHook(() => useWizard());
+    await waitFor(() => expect(result.current.status).toBe("in-progress"));
+
+    act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
+    for (let i = 0; i < 6; i++) act(() => result.current.goNext());
+    expect(result.current.status).toBe("result");
+
+    // Guards the index arithmetic: a position that is not a step must not
+    // resolve to steps[0] via findIndex returning -1.
+    expect(result.current.currentStep).toBeNull();
+    expect(result.current.isLastStep).toBe(false);
+    expect(result.current.canGoBack).toBe(false);
+  });
+
+  it("stays on the result screen when goNext is called again", async () => {
+    const { result } = renderHook(() => useWizard());
+    await waitFor(() => expect(result.current.status).toBe("in-progress"));
+
+    act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
+    for (let i = 0; i < 7; i++) act(() => result.current.goNext());
+
+    expect(result.current.status).toBe("result");
+  });
+
+  it("goBack from the result returns to the summary", async () => {
+    const { result } = renderHook(() => useWizard());
+    await waitFor(() => expect(result.current.status).toBe("in-progress"));
+
+    act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
+    for (let i = 0; i < 6; i++) act(() => result.current.goNext());
+    expect(result.current.status).toBe("result");
+
+    act(() => result.current.goBack());
+
+    expect(result.current.status).toBe("summary");
+  });
+
+  it("resumes on the result screen after a reload", async () => {
+    const first = renderHook(() => useWizard());
+    await waitFor(() => expect(first.result.current.status).toBe("in-progress"));
+
+    act(() => first.result.current.updateAnswers({ objetivo: "autoridad" }));
+    for (let i = 0; i < 6; i++) act(() => first.result.current.goNext());
+    expect(first.result.current.status).toBe("result");
+
+    const second = renderHook(() => useWizard());
+
+    await waitFor(() => expect(second.result.current.status).toBe("result"));
+  });
 });

@@ -19,7 +19,7 @@ export default function Home() {
           viral-content-kit
         </h1>
         <p className="max-w-sm text-sm text-muted-foreground">
-          Respondé el cuestionario y recibí tu kit de prompts para
+          Responde el cuestionario y recibe tu kit de prompts para
           estrategia de contenido.
         </p>
         <Button asChild>

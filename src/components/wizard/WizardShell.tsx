@@ -13,6 +13,7 @@ import { Step4Recursos } from "./Step4Recursos";
 import { Step5Gancho } from "./Step5Gancho";
 import { Step6Oferta } from "./Step6Oferta";
 import { WizardSummary } from "./WizardSummary";
+import { PromptKitResult } from "@/components/kit/PromptKitResult";
 import type { StepProps } from "./step-props";
 
 const STEP_COMPONENTS: Record<StepId, ComponentType<StepProps>> = {
@@ -35,11 +36,22 @@ export function WizardShell() {
     );
   }
 
+  if (wizard.status === "result") {
+    return (
+      <PromptKitResult
+        answers={wizard.answers}
+        onBack={wizard.goBack}
+        onRestart={wizard.restart}
+      />
+    );
+  }
+
   if (wizard.status === "summary") {
     return (
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-6 py-12">
         <WizardSummary answers={wizard.answers} />
         <div className="flex flex-wrap gap-3">
+          <Button onClick={wizard.goNext}>Generar mi kit de prompts</Button>
           <Button variant="outline" onClick={wizard.goBack}>
             Corregir una respuesta
           </Button>

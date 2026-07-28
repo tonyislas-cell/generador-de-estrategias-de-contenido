@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getVisibleSteps, type StepDefinition } from "./steps";
 import { clearWizardState, loadWizardState, saveWizardState } from "./storage";
-import type { StepId, WizardAnswers } from "./types";
+import type { StepId, WizardAnswers, WizardPosition } from "./types";
 
-export type WizardStatus = "loading" | "in-progress" | "summary";
+export type WizardStatus = "loading" | "in-progress" | "summary" | "result";
 
 const FIRST_STEP_ID: StepId = "contexto";
 
@@ -26,9 +26,8 @@ export interface UseWizardResult {
 
 export function useWizard(): UseWizardResult {
   const [answers, setAnswers] = useState<WizardAnswers>({});
-  const [currentStepId, setCurrentStepId] = useState<StepId | "summary">(
-    FIRST_STEP_ID
-  );
+  const [currentStepId, setCurrentStepId] =
+    useState<WizardPosition>(FIRST_STEP_ID);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
@@ -51,28 +50,36 @@ export function useWizard(): UseWizardResult {
 
   const steps = useMemo(() => getVisibleSteps(answers), [answers]);
 
-  const rawIndex =
-    currentStepId === "summary"
-      ? steps.length
-      : steps.findIndex((step) => step.id === currentStepId);
+  // Todas las ramas de índice pasan por acá. Sin este predicado, cualquier
+  // posición que no sea un paso cae en `findIndex` → -1 → índice 0, y el hook
+  // devolvería un paso real mientras la pantalla mostrada es otra.
+  const isOnStep = currentStepId !== "summary" && currentStepId !== "result";
+
+  const rawIndex = isOnStep
+    ? steps.findIndex((step) => step.id === currentStepId)
+    : steps.length;
   const currentStepIndex = rawIndex === -1 ? 0 : rawIndex;
-  const currentStep =
-    currentStepId === "summary" ? null : steps[currentStepIndex] ?? null;
+  const currentStep = isOnStep ? steps[currentStepIndex] ?? null : null;
 
   const status: WizardStatus = !isHydrated
     ? "loading"
     : currentStepId === "summary"
       ? "summary"
-      : "in-progress";
-  const isLastStep =
-    currentStepId !== "summary" && currentStepIndex === steps.length - 1;
+      : currentStepId === "result"
+        ? "result"
+        : "in-progress";
+  const isLastStep = isOnStep && currentStepIndex === steps.length - 1;
 
   const updateAnswers = useCallback((partial: Partial<WizardAnswers>) => {
     setAnswers((prev) => ({ ...prev, ...partial }));
   }, []);
 
   const goNext = useCallback(() => {
-    if (currentStepId === "summary") return;
+    if (currentStepId === "result") return;
+    if (currentStepId === "summary") {
+      setCurrentStepId("result");
+      return;
+    }
     if (isLastStep) {
       setCurrentStepId("summary");
       return;
@@ -82,6 +89,10 @@ export function useWizard(): UseWizardResult {
   }, [currentStepId, currentStepIndex, isLastStep, steps]);
 
   const goBack = useCallback(() => {
+    if (currentStepId === "result") {
+      setCurrentStepId("summary");
+      return;
+    }
     if (currentStepId === "summary") {
       const last = steps[steps.length - 1];
       if (last) setCurrentStepId(last.id);
@@ -104,7 +115,7 @@ export function useWizard(): UseWizardResult {
     steps,
     currentStep,
     currentStepIndex,
-    canGoBack: currentStepId !== "summary" && currentStepIndex > 0,
+    canGoBack: isOnStep && currentStepIndex > 0,
     isLastStep,
     isCurrentStepAnswered: currentStep ? currentStep.isAnswered(answers) : true,
     updateAnswers,

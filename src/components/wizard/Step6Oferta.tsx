@@ -9,7 +9,7 @@ export function Step6Oferta({ answers, onChange }: StepProps) {
         <Label htmlFor="oferta">¿Qué estás vendiendo?</Label>
         <Textarea
           id="oferta"
-          placeholder="Describí tu producto, servicio u oferta"
+          placeholder="Describe tu producto, servicio u oferta"
           value={answers.oferta ?? ""}
           onChange={(e) => onChange({ oferta: e.target.value })}
         />
@@ -19,7 +19,7 @@ export function Step6Oferta({ answers, onChange }: StepProps) {
         <Label htmlFor="objeciones">Objeciones comunes de tus clientes</Label>
         <Textarea
           id="objeciones"
-          placeholder="¿Qué dudas o excusas escuchás más seguido?"
+          placeholder="¿Qué dudas o excusas escuchas más seguido?"
           value={answers.objeciones ?? ""}
           onChange={(e) => onChange({ objeciones: e.target.value })}
         />
