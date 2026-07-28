@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useWizard } from "@/lib/wizard/useWizard";
 import type { StepId } from "@/lib/wizard/types";
+import { DURACION_OPTIONS } from "@/lib/prompt-kit/types";
 import { Step1Contexto } from "./Step1Contexto";
 import { Step2Objetivo } from "./Step2Objetivo";
 import { Step3Formato } from "./Step3Formato";
@@ -13,6 +14,7 @@ import { Step4Recursos } from "./Step4Recursos";
 import { Step5Gancho } from "./Step5Gancho";
 import { Step6Oferta } from "./Step6Oferta";
 import { WizardSummary } from "./WizardSummary";
+import { ChoiceCardGroup } from "./ChoiceCardGroup";
 import { PromptKitResult } from "@/components/kit/PromptKitResult";
 import type { StepProps } from "./step-props";
 
@@ -40,6 +42,7 @@ export function WizardShell() {
     return (
       <PromptKitResult
         answers={wizard.answers}
+        duracion={wizard.duracion}
         onBack={wizard.goBack}
         onRestart={wizard.restart}
       />
@@ -50,6 +53,17 @@ export function WizardShell() {
     return (
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-6 py-12">
         <WizardSummary answers={wizard.answers} />
+        <div className="grid gap-2">
+          <span className="text-sm font-medium text-foreground">
+            Duración del plan
+          </span>
+          <ChoiceCardGroup
+            name="duracion"
+            options={DURACION_OPTIONS}
+            value={wizard.duracion}
+            onChange={wizard.setDuracion}
+          />
+        </div>
         <div className="flex flex-wrap gap-3">
           <Button onClick={wizard.goNext}>Generar mi kit de prompts</Button>
           <Button variant="outline" onClick={wizard.goBack}>

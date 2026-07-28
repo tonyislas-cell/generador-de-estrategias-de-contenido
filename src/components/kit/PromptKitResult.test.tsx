@@ -21,7 +21,12 @@ const noop = () => {};
 describe("PromptKitResult", () => {
   it("renders the setup block followed by both weekly blocks, in order", () => {
     render(
-      <PromptKitResult answers={COMPLETE} onBack={noop} onRestart={noop} />
+      <PromptKitResult
+        answers={COMPLETE}
+        duracion="14_dias"
+        onBack={noop}
+        onRestart={noop}
+      />
     );
 
     const titulos = screen
@@ -35,9 +40,40 @@ describe("PromptKitResult", () => {
     ]);
   });
 
+  it("renders four weekly blocks for a one-month plan", () => {
+    render(
+      <PromptKitResult
+        answers={COMPLETE}
+        duracion="1_mes"
+        onBack={noop}
+        onRestart={noop}
+      />
+    );
+
+    const titulos = screen
+      .getAllByRole("heading", { level: 3 })
+      .map((heading) => heading.textContent);
+
+    expect(titulos).toEqual([
+      "Prompt 1 — Configuración",
+      "Prompt 2 — Semana 1",
+      "Prompt 3 — Semana 2",
+      "Prompt 4 — Semana 3",
+      "Prompt 5 — Semana 4",
+    ]);
+    expect(screen.getByRole("banner")).toHaveTextContent(
+      "Plan de 1 mes · TikTok · para Claude"
+    );
+  });
+
   it("separates the setup block from the weekly blocks", () => {
     render(
-      <PromptKitResult answers={COMPLETE} onBack={noop} onRestart={noop} />
+      <PromptKitResult
+        answers={COMPLETE}
+        duracion="14_dias"
+        onBack={noop}
+        onRestart={noop}
+      />
     );
 
     expect(
@@ -50,7 +86,12 @@ describe("PromptKitResult", () => {
 
   it("gives every block its own copy button", () => {
     render(
-      <PromptKitResult answers={COMPLETE} onBack={noop} onRestart={noop} />
+      <PromptKitResult
+        answers={COMPLETE}
+        duracion="14_dias"
+        onBack={noop}
+        onRestart={noop}
+      />
     );
 
     expect(screen.getAllByRole("button", { name: "Copiar" })).toHaveLength(3);
@@ -58,7 +99,12 @@ describe("PromptKitResult", () => {
 
   it("names the platform and target model the kit was built for", () => {
     render(
-      <PromptKitResult answers={COMPLETE} onBack={noop} onRestart={noop} />
+      <PromptKitResult
+        answers={COMPLETE}
+        duracion="14_dias"
+        onBack={noop}
+        onRestart={noop}
+      />
     );
 
     // Scoped to the header on purpose: the platform name also appears inside
@@ -70,7 +116,14 @@ describe("PromptKitResult", () => {
 
   it("shows a recoverable message instead of prompts when answers are incomplete", () => {
     const onBack = vi.fn();
-    render(<PromptKitResult answers={{}} onBack={onBack} onRestart={noop} />);
+    render(
+      <PromptKitResult
+        answers={{}}
+        duracion="14_dias"
+        onBack={onBack}
+        onRestart={noop}
+      />
+    );
 
     expect(
       screen.getByRole("heading", { name: "Faltan respuestas" })

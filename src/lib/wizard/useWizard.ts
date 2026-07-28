@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Duracion } from "../prompt-kit/types";
 import { getVisibleSteps, type StepDefinition } from "./steps";
 import { clearWizardState, loadWizardState, saveWizardState } from "./storage";
 import type { StepId, WizardAnswers, WizardPosition } from "./types";
@@ -8,6 +9,7 @@ import type { StepId, WizardAnswers, WizardPosition } from "./types";
 export type WizardStatus = "loading" | "in-progress" | "summary" | "result";
 
 const FIRST_STEP_ID: StepId = "contexto";
+const DEFAULT_DURACION: Duracion = "14_dias";
 
 export interface UseWizardResult {
   status: WizardStatus;
@@ -18,6 +20,8 @@ export interface UseWizardResult {
   canGoBack: boolean;
   isLastStep: boolean;
   isCurrentStepAnswered: boolean;
+  duracion: Duracion;
+  setDuracion: (duracion: Duracion) => void;
   updateAnswers: (partial: Partial<WizardAnswers>) => void;
   goNext: () => void;
   goBack: () => void;
@@ -28,6 +32,7 @@ export function useWizard(): UseWizardResult {
   const [answers, setAnswers] = useState<WizardAnswers>({});
   const [currentStepId, setCurrentStepId] =
     useState<WizardPosition>(FIRST_STEP_ID);
+  const [duracion, setDuracion] = useState<Duracion>(DEFAULT_DURACION);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
@@ -38,6 +43,7 @@ export function useWizard(): UseWizardResult {
     if (stored) {
       setAnswers(stored.answers);
       setCurrentStepId(stored.currentStepId);
+      setDuracion(stored.duracion ?? DEFAULT_DURACION);
     }
     setIsHydrated(true);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -45,8 +51,8 @@ export function useWizard(): UseWizardResult {
 
   useEffect(() => {
     if (!isHydrated) return;
-    saveWizardState({ answers, currentStepId });
-  }, [isHydrated, answers, currentStepId]);
+    saveWizardState({ answers, currentStepId, duracion });
+  }, [isHydrated, answers, currentStepId, duracion]);
 
   const steps = useMemo(() => getVisibleSteps(answers), [answers]);
 
@@ -106,6 +112,7 @@ export function useWizard(): UseWizardResult {
   const restart = useCallback(() => {
     setAnswers({});
     setCurrentStepId(FIRST_STEP_ID);
+    setDuracion(DEFAULT_DURACION);
     clearWizardState();
   }, []);
 
@@ -118,6 +125,8 @@ export function useWizard(): UseWizardResult {
     canGoBack: isOnStep && currentStepIndex > 0,
     isLastStep,
     isCurrentStepAnswered: currentStep ? currentStep.isAnswered(answers) : true,
+    duracion,
+    setDuracion,
     updateAnswers,
     goNext,
     goBack,

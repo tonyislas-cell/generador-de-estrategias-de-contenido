@@ -186,4 +186,55 @@ describe("useWizard", () => {
 
     await waitFor(() => expect(second.result.current.status).toBe("result"));
   });
+
+  it("defaults duracion to 14_dias", async () => {
+    const { result } = renderHook(() => useWizard());
+    await waitFor(() => expect(result.current.status).toBe("in-progress"));
+
+    expect(result.current.duracion).toBe("14_dias");
+  });
+
+  it("setDuracion updates the duration and persists it", async () => {
+    const { result } = renderHook(() => useWizard());
+    await waitFor(() => expect(result.current.status).toBe("in-progress"));
+
+    act(() => result.current.setDuracion("1_mes"));
+
+    expect(result.current.duracion).toBe("1_mes");
+    expect(loadWizardState()?.duracion).toBe("1_mes");
+  });
+
+  it("resumes the saved duration after a reload", async () => {
+    const first = renderHook(() => useWizard());
+    await waitFor(() => expect(first.result.current.status).toBe("in-progress"));
+
+    act(() => first.result.current.setDuracion("1_mes"));
+
+    const second = renderHook(() => useWizard());
+    await waitFor(() => expect(second.result.current.status).toBe("in-progress"));
+
+    expect(second.result.current.duracion).toBe("1_mes");
+  });
+
+  it("falls back to 14_dias when resuming a state saved before duracion existed", async () => {
+    window.localStorage.setItem(
+      "viral-content-kit:wizard:v1",
+      JSON.stringify({ answers: {}, currentStepId: "contexto" })
+    );
+
+    const { result } = renderHook(() => useWizard());
+    await waitFor(() => expect(result.current.status).toBe("in-progress"));
+
+    expect(result.current.duracion).toBe("14_dias");
+  });
+
+  it("restart resets duracion back to the default", async () => {
+    const { result } = renderHook(() => useWizard());
+    await waitFor(() => expect(result.current.status).toBe("in-progress"));
+
+    act(() => result.current.setDuracion("1_mes"));
+    act(() => result.current.restart());
+
+    expect(result.current.duracion).toBe("14_dias");
+  });
 });

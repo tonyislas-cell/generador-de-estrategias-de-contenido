@@ -14,12 +14,23 @@ describe("wizard storage", () => {
     saveWizardState({
       answers: { nicho: "Finanzas personales" },
       currentStepId: "objetivo",
+      duracion: "1_mes",
     });
 
     expect(loadWizardState()).toEqual({
       answers: { nicho: "Finanzas personales" },
       currentStepId: "objetivo",
+      duracion: "1_mes",
     });
+  });
+
+  it("loads a state saved before duracion existed without it", () => {
+    window.localStorage.setItem(
+      "viral-content-kit:wizard:v1",
+      JSON.stringify({ answers: {}, currentStepId: "contexto" })
+    );
+
+    expect(loadWizardState()?.duracion).toBeUndefined();
   });
 
   it("returns null and doesn't throw when the stored value is corrupt JSON", () => {

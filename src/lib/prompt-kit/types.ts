@@ -1,4 +1,4 @@
-import type { Plataforma } from "@/lib/wizard/types";
+import type { Option, Plataforma } from "@/lib/wizard/types";
 
 /**
  * Modelos de IA para los que sabemos generar un kit.
@@ -14,13 +14,24 @@ export type ModeloIA = "claude";
 
 export type Duracion = "14_dias" | "1_mes";
 
-export const DURACION_CONFIG: Record<
-  Duracion,
-  { semanas: number; etiqueta: string }
-> = {
+interface DuracionConfig {
+  semanas: number;
+  etiqueta: string;
+}
+
+export const DURACION_CONFIG: Record<Duracion, DuracionConfig> = {
   "14_dias": { semanas: 2, etiqueta: "14 días" },
   "1_mes": { semanas: 4, etiqueta: "1 mes" },
 };
+
+/** Derivado de `DURACION_CONFIG` para que la etiqueta del toggle y la del kit nunca diverjan. */
+export const DURACION_OPTIONS: Option<Duracion>[] = (
+  Object.entries(DURACION_CONFIG) as [Duracion, DuracionConfig][]
+).map(([duracion, config]) => ({
+  value: duracion,
+  label: config.etiqueta,
+  description: `${config.semanas} bloques semanales`,
+}));
 
 export type PromptBlockKind = "setup" | "semana";
 

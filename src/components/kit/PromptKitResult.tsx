@@ -12,20 +12,21 @@ import type { WizardAnswers } from "@/lib/wizard/types";
 import { PromptBlockCard } from "./PromptBlockCard";
 
 /**
- * Fijos por ahora. Cuando lleguen las pestañas por modelo y el selector de
- * duración pasan a ser estado; el `useMemo` de abajo ya depende de ambos.
+ * Fijo por ahora. Cuando lleguen las pestañas por modelo pasa a ser estado,
+ * igual que `duracion` ya lo es.
  */
 const MODELO: ModeloIA = "claude";
-const DURACION: Duracion = "14_dias";
 
 interface PromptKitResultProps {
   answers: WizardAnswers;
+  duracion: Duracion;
   onBack: () => void;
   onRestart: () => void;
 }
 
 export function PromptKitResult({
   answers,
+  duracion,
   onBack,
   onRestart,
 }: PromptKitResultProps) {
@@ -38,9 +39,9 @@ export function PromptKitResult({
       kitAnswers,
       getTrendsSnippet(plataforma),
       MODELO,
-      DURACION
+      duracion
     );
-  }, [answers]);
+  }, [answers, duracion]);
 
   // `loadWizardState` valida la forma de manera laxa, así que un estado viejo o
   // editado a mano puede llegar hasta acá sin respuestas. Mejor decirlo que

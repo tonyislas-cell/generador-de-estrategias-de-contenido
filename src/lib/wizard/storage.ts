@@ -1,3 +1,4 @@
+import type { Duracion } from "../prompt-kit/types";
 import type { WizardAnswers, WizardPosition } from "./types";
 
 const STORAGE_KEY = "viral-content-kit:wizard:v1";
@@ -11,6 +12,11 @@ export interface StoredWizardState {
    * `:v1` tampoco necesita subir de versión.
    */
   currentStepId: WizardPosition;
+  /**
+   * Opcional para que los estados guardados antes de este ticket sigan
+   * siendo válidos sin migración: `useWizard` completa el default al hidratar.
+   */
+  duracion?: Duracion;
 }
 
 function isStoredWizardState(value: unknown): value is StoredWizardState {
