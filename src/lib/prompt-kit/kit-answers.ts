@@ -1,6 +1,7 @@
 import type {
   Equipo,
   EstiloGancho,
+  EtapaCuenta,
   Formato,
   Frecuencia,
   Plataforma,
@@ -14,6 +15,9 @@ interface KitAnswersBase {
   audiencia: string;
   plataformas: [Plataforma, ...Plataforma[]];
   tono: Tono;
+  etapaCuenta: EtapaCuenta;
+  /** `null` cuando la persona no completó el campo — es opcional, a diferencia del resto. */
+  contextoMarca: string | null;
   formato: Formato;
   equipo: Equipo;
   tiempoPorPieza: TiempoPorPieza;
@@ -62,10 +66,13 @@ export function toKitAnswers(answers: WizardAnswers): KitAnswers | null {
   const audiencia = trimmed(answers.audiencia);
   const plataformas = asNonEmpty(answers.plataformas);
   const estilosGancho = asNonEmpty(answers.estilosGancho);
-  const { tono, formato, equipo, tiempoPorPieza, frecuencia, objetivo } = answers;
+  const { tono, etapaCuenta, formato, equipo, tiempoPorPieza, frecuencia, objetivo } =
+    answers;
 
   if (!nicho || !audiencia || !plataformas || !estilosGancho) return null;
-  if (!tono || !formato || !equipo || !tiempoPorPieza || !frecuencia) return null;
+  if (!tono || !etapaCuenta || !formato || !equipo || !tiempoPorPieza || !frecuencia) {
+    return null;
+  }
   if (!objetivo) return null;
 
   const base: KitAnswersBase = {
@@ -73,6 +80,8 @@ export function toKitAnswers(answers: WizardAnswers): KitAnswers | null {
     audiencia,
     plataformas,
     tono,
+    etapaCuenta,
+    contextoMarca: trimmed(answers.contextoMarca),
     formato,
     equipo,
     tiempoPorPieza,

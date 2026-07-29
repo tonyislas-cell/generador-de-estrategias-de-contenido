@@ -1,6 +1,7 @@
 import {
   EQUIPO_OPTIONS,
   ESTILO_GANCHO_OPTIONS,
+  ETAPA_CUENTA_OPTIONS,
   FORMATO_OPTIONS,
   FRECUENCIA_OPTIONS,
   OBJETIVO_OPTIONS,
@@ -23,3 +24,4 @@ export const equipoLabel = labelFor(EQUIPO_OPTIONS);
 export const tiempoPorPiezaLabel = labelFor(TIEMPO_POR_PIEZA_OPTIONS);
 export const frecuenciaLabel = labelFor(FRECUENCIA_OPTIONS);
 export const estiloGanchoLabel = labelFor(ESTILO_GANCHO_OPTIONS);
+export const etapaCuentaLabel = labelFor(ETAPA_CUENTA_OPTIONS);

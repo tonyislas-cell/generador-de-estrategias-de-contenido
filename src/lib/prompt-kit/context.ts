@@ -4,6 +4,7 @@ import * as labels from "@/lib/wizard/labels";
 import {
   EQUIPO_DESCRIPTOR,
   ESTILO_GANCHO_MECANICA,
+  ETAPA_CUENTA_DESCRIPTOR,
   FORMATO_DESCRIPTOR,
   PIEZAS_POR_SEMANA,
   TIEMPO_POR_PIEZA_DESCRIPTOR,
@@ -36,6 +37,8 @@ export interface PromptContext {
   // Los campos `*Label` guardan el texto que vio el usuario, no el valor crudo.
   tonoLabel: string;
   tonoDescriptor: string;
+  etapaCuentaLabel: string;
+  etapaCuentaDescriptor: string;
   formatoLabel: string;
   formatoDescriptor: string;
   equipoLabel: string;
@@ -81,6 +84,8 @@ export function buildContext(
 
     tonoLabel: labels.tonoLabel(answers.tono),
     tonoDescriptor: TONO_DESCRIPTOR[answers.tono],
+    etapaCuentaLabel: labels.etapaCuentaLabel(answers.etapaCuenta),
+    etapaCuentaDescriptor: ETAPA_CUENTA_DESCRIPTOR[answers.etapaCuenta],
     formatoLabel: labels.formatoLabel(answers.formato),
     formatoDescriptor: FORMATO_DESCRIPTOR[answers.formato],
     equipoLabel: labels.equipoLabel(answers.equipo),

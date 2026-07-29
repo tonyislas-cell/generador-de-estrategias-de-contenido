@@ -18,7 +18,8 @@ const STEP_DEFINITIONS: StepDefinition[] = [
       hasText(a.nicho) &&
       hasText(a.audiencia) &&
       hasItems(a.plataformas) &&
-      hasText(a.tono),
+      hasText(a.tono) &&
+      hasText(a.etapaCuenta),
   },
   {
     id: "objetivo",

@@ -41,18 +41,24 @@ function rol(ctx: PromptContext): string {
 }
 
 function contextoDelCreador(ctx: PromptContext): string {
-  return [
+  const contextoMarca = ctx.answers.contextoMarca
+    ? `<contexto_de_marca>${ctx.answers.contextoMarca}</contexto_de_marca>`
+    : null;
+
+  return lines([
     "<contexto_del_creador>",
     `<nicho>${ctx.answers.nicho}</nicho>`,
     `<audiencia>${ctx.answers.audiencia}</audiencia>`,
     `<plataforma_principal>${ctx.plataformaPrincipalLabel}</plataforma_principal>`,
     `<tono_de_marca>${ctx.tonoLabel} — ${ctx.tonoDescriptor}</tono_de_marca>`,
+    `<etapa_de_cuenta>${ctx.etapaCuentaLabel} — ${ctx.etapaCuentaDescriptor}</etapa_de_cuenta>`,
+    contextoMarca,
     `<formato_de_produccion>${ctx.formatoLabel} — ${ctx.formatoDescriptor}</formato_de_produccion>`,
     "<estilos_de_gancho>",
     bullets(ctx.ganchos.map((g) => `${g.label}: ${g.mecanica}`)),
     "</estilos_de_gancho>",
     "</contexto_del_creador>",
-  ].join("\n");
+  ]);
 }
 
 function plataformasSecundarias(ctx: PromptContext): string | null {

@@ -53,3 +53,31 @@ describe("getVisibleSteps", () => {
     expect(withoutOferta.map((s) => s.id)).not.toContain("oferta");
   });
 });
+
+describe("contexto step's isAnswered", () => {
+  const contextoStep = getVisibleSteps({}).find((s) => s.id === "contexto")!;
+  const complete: WizardAnswers = {
+    nicho: "Finanzas personales",
+    audiencia: "Freelancers de 25 a 35",
+    plataformas: ["tiktok"],
+    tono: "cercano",
+    etapaCuenta: "establecida",
+  };
+
+  it("is answered once every required field is present, even without contextoMarca", () => {
+    expect(contextoStep.isAnswered(complete)).toBe(true);
+  });
+
+  it("is not answered when etapaCuenta is missing", () => {
+    const withoutEtapa = { ...complete };
+    delete withoutEtapa.etapaCuenta;
+
+    expect(contextoStep.isAnswered(withoutEtapa)).toBe(false);
+  });
+
+  it("is answered the same whether or not contextoMarca was filled in", () => {
+    expect(
+      contextoStep.isAnswered({ ...complete, contextoMarca: "Marca familiar" })
+    ).toBe(true);
+  });
+});

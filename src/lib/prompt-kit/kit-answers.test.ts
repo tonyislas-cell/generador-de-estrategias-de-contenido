@@ -7,6 +7,7 @@ const completeAutoridad: WizardAnswers = {
   audiencia: "Freelancers de 25 a 35",
   plataformas: ["tiktok"],
   tono: "cercano",
+  etapaCuenta: "establecida",
   objetivo: "autoridad",
   formato: "camara",
   equipo: "solo",
@@ -54,6 +55,7 @@ describe("toKitAnswers", () => {
       "audiencia",
       "plataformas",
       "tono",
+      "etapaCuenta",
       "objetivo",
       "formato",
       "equipo",
@@ -109,6 +111,31 @@ describe("toKitAnswers", () => {
 
     expect(result?.nicho).toBe("Finanzas personales");
     expect(result).toMatchObject({ oferta: "Curso de finanzas" });
+  });
+
+  it("defaults contextoMarca to null when it was never answered", () => {
+    const result = toKitAnswers(completeAutoridad);
+
+    expect(result?.contextoMarca).toBeNull();
+  });
+
+  it("normalizes a whitespace-only contextoMarca to null", () => {
+    const result = toKitAnswers({ ...completeAutoridad, contextoMarca: "   " });
+
+    expect(result?.contextoMarca).toBeNull();
+  });
+
+  it("trims and keeps a real contextoMarca", () => {
+    const result = toKitAnswers({
+      ...completeAutoridad,
+      contextoMarca: "  Somos una marca familiar, sin inversores.  ",
+    });
+
+    expect(result?.contextoMarca).toBe("Somos una marca familiar, sin inversores.");
+  });
+
+  it("does not require contextoMarca for the kit to be valid", () => {
+    expect(toKitAnswers(completeAutoridad)).not.toBeNull();
   });
 });
 

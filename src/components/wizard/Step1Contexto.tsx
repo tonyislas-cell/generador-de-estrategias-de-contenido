@@ -1,8 +1,13 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { CheckboxGroup } from "./CheckboxGroup";
 import { ChoiceCardGroup } from "./ChoiceCardGroup";
-import { PLATAFORMA_OPTIONS, TONO_OPTIONS } from "@/lib/wizard/options";
+import {
+  ETAPA_CUENTA_OPTIONS,
+  PLATAFORMA_OPTIONS,
+  TONO_OPTIONS,
+} from "@/lib/wizard/options";
 import type { StepProps } from "./step-props";
 
 export function Step1Contexto({ answers, onChange }: StepProps) {
@@ -29,6 +34,16 @@ export function Step1Contexto({ answers, onChange }: StepProps) {
       </div>
 
       <div className="grid gap-2">
+        <Label>Etapa de la cuenta</Label>
+        <ChoiceCardGroup
+          name="etapaCuenta"
+          options={ETAPA_CUENTA_OPTIONS}
+          value={answers.etapaCuenta}
+          onChange={(etapaCuenta) => onChange({ etapaCuenta })}
+        />
+      </div>
+
+      <div className="grid gap-2">
         <Label>Plataforma(s) donde vas a publicar</Label>
         <CheckboxGroup
           name="plataformas"
@@ -45,6 +60,18 @@ export function Step1Contexto({ answers, onChange }: StepProps) {
           options={TONO_OPTIONS}
           value={answers.tono}
           onChange={(tono) => onChange({ tono })}
+        />
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="contextoMarca">
+          Contexto adicional de tu marca (opcional)
+        </Label>
+        <Textarea
+          id="contextoMarca"
+          placeholder="Historia, valores, algo que el modelo debería saber y no entra arriba"
+          value={answers.contextoMarca ?? ""}
+          onChange={(e) => onChange({ contextoMarca: e.target.value })}
         />
       </div>
     </div>

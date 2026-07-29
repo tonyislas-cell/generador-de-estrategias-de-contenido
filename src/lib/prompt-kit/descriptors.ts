@@ -1,6 +1,7 @@
 import type {
   Equipo,
   EstiloGancho,
+  EtapaCuenta,
   Formato,
   Frecuencia,
   TiempoPorPieza,
@@ -19,6 +20,14 @@ import type {
  * los adaptadores de otros modelos lo reutilizan y solo aportan estructura,
  * orden y énfasis.
  */
+
+/** Qué puede asumir el modelo sobre la audiencia ya construida (o no) de la cuenta. */
+export const ETAPA_CUENTA_DESCRIPTOR: Record<EtapaCuenta, string> = {
+  nueva:
+    "sin audiencia todavía. Cada pieza tiene que funcionar de pie sola, para alguien que te ve por primera vez — no asumas que conocen tu tesis, tu tono ni tu historia previa.",
+  establecida:
+    "ya tiene audiencia. Puedes asumir contexto compartido con quienes ya te siguen, sin tener que reexplicar quién eres en cada pieza.",
+};
 
 /** Cómo tiene que escribir el modelo. */
 export const TONO_DESCRIPTOR: Record<Tono, string> = {

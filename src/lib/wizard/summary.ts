@@ -2,6 +2,7 @@ import { getVisibleSteps } from "./steps";
 import {
   equipoLabel,
   estiloGanchoLabel,
+  etapaCuentaLabel,
   formatoLabel,
   frecuenciaLabel,
   objetivoLabel,
@@ -26,6 +27,12 @@ export function getSummaryItems(answers: WizardAnswers): SummaryItem[] {
   if (answers.audiencia) {
     items.push({ label: "Audiencia objetivo", value: answers.audiencia });
   }
+  if (answers.etapaCuenta) {
+    items.push({
+      label: "Etapa de la cuenta",
+      value: etapaCuentaLabel(answers.etapaCuenta),
+    });
+  }
   if (answers.plataformas?.length) {
     items.push({
       label: "Plataformas",
@@ -34,6 +41,9 @@ export function getSummaryItems(answers: WizardAnswers): SummaryItem[] {
   }
   if (answers.tono) {
     items.push({ label: "Tono de marca", value: tonoLabel(answers.tono) });
+  }
+  if (answers.contextoMarca) {
+    items.push({ label: "Contexto de marca", value: answers.contextoMarca });
   }
   if (answers.objetivo) {
     items.push({ label: "Objetivo", value: objetivoLabel(answers.objetivo) });

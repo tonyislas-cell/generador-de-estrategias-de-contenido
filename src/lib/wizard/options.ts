@@ -1,6 +1,8 @@
+import { ESTILO_GANCHO_MECANICA } from "@/lib/prompt-kit/descriptors";
 import type {
   Equipo,
   EstiloGancho,
+  EtapaCuenta,
   Formato,
   Frecuencia,
   Objetivo,
@@ -15,6 +17,19 @@ export const PLATAFORMA_OPTIONS: Option<Plataforma>[] = [
   { value: "instagram_reels", label: "Instagram Reels" },
   { value: "youtube_shorts", label: "YouTube Shorts" },
   { value: "linkedin", label: "LinkedIn" },
+];
+
+export const ETAPA_CUENTA_OPTIONS: Option<EtapaCuenta>[] = [
+  {
+    value: "nueva",
+    label: "Cuenta nueva",
+    description: "Recién estoy empezando, todavía no tengo audiencia real.",
+  },
+  {
+    value: "establecida",
+    label: "Cuenta establecida",
+    description: "Ya tengo cuenta y audiencia, quiero seguir construyendo sobre eso.",
+  },
 ];
 
 export const TONO_OPTIONS: Option<Tono>[] = [
@@ -73,10 +88,23 @@ export const FRECUENCIA_OPTIONS: Option<Frecuencia>[] = [
   { value: "diaria", label: "Todos los días" },
 ];
 
-export const ESTILO_GANCHO_OPTIONS: Option<EstiloGancho>[] = [
+const ESTILO_GANCHO_LABELS: { value: EstiloGancho; label: string }[] = [
   { value: "polemico", label: "Polémico" },
   { value: "educativo", label: "Educativo" },
   { value: "storytelling", label: "Storytelling" },
   { value: "humor", label: "Humor" },
   { value: "curiosidad", label: "Curiosidad" },
 ];
+
+/**
+ * `description` sale de `ESTILO_GANCHO_MECANICA` para que la explicación que
+ * ve el usuario en el cuestionario nunca diverja de la instrucción real que
+ * recibe el modelo — misma idea que `DURACION_OPTIONS` derivado de
+ * `DURACION_CONFIG`.
+ */
+export const ESTILO_GANCHO_OPTIONS: Option<EstiloGancho>[] = ESTILO_GANCHO_LABELS.map(
+  (option) => ({
+    ...option,
+    description: ESTILO_GANCHO_MECANICA[option.value],
+  })
+);

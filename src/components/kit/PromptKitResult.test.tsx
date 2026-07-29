@@ -21,6 +21,7 @@ const COMPLETE: WizardAnswers = {
   audiencia: "Freelancers de 25 a 35",
   plataformas: ["tiktok"],
   tono: "cercano",
+  etapaCuenta: "establecida",
   objetivo: "autoridad",
   formato: "camara",
   equipo: "solo",

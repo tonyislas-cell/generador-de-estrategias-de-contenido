@@ -8,6 +8,7 @@ describe("getSummaryItems", () => {
       nicho: "Finanzas personales",
       plataformas: ["tiktok", "linkedin"],
       tono: "cercano",
+      etapaCuenta: "nueva",
       objetivo: "autoridad",
     };
 
@@ -17,6 +18,7 @@ describe("getSummaryItems", () => {
     expect(byLabel["Nicho o industria"]).toBe("Finanzas personales");
     expect(byLabel["Plataformas"]).toBe("TikTok, LinkedIn");
     expect(byLabel["Tono de marca"]).toBe("Cercano");
+    expect(byLabel["Etapa de la cuenta"]).toBe("Cuenta nueva");
     expect(byLabel["Objetivo"]).toBe("Autoridad y consistencia de marca");
   });
 

@@ -31,15 +31,24 @@ export function CheckboxGroup<T extends string>({
         return (
           <div
             key={option.value}
-            className="flex items-center gap-2 rounded-lg border border-border p-3"
+            className="flex items-start gap-2 rounded-lg border border-border p-3"
           >
             <Checkbox
               id={id}
               checked={checked}
               onCheckedChange={(value) => toggle(option.value, value === true)}
+              className="mt-0.5"
             />
-            <Label htmlFor={id} className="cursor-pointer font-normal">
-              {option.label}
+            <Label
+              htmlFor={id}
+              className="flex cursor-pointer flex-col gap-1 font-normal"
+            >
+              <span className="font-medium text-foreground">{option.label}</span>
+              {option.description ? (
+                <span className="text-sm text-muted-foreground">
+                  {option.description}
+                </span>
+              ) : null}
             </Label>
           </div>
         );

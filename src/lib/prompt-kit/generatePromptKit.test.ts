@@ -10,6 +10,7 @@ const BASE: WizardAnswers = {
   audiencia: "Freelancers de 25 a 35 que recién empiezan",
   plataformas: ["tiktok"],
   tono: "cercano",
+  etapaCuenta: "establecida",
   objetivo: "autoridad",
   formato: "camara",
   equipo: "solo",
@@ -111,6 +112,31 @@ describe("generatePromptKit", () => {
       "semana-3",
       "semana-4",
     ]);
+  });
+
+  it("includes contextoMarca in the setup when provided, and nothing extra when it's absent", () => {
+    const sinContexto = buildKit();
+    expect(textoCompleto(sinContexto)).not.toContain("contexto_de_marca");
+    expect(textoCompleto(sinContexto)).not.toContain("Contexto de marca");
+
+    const conContexto = buildKit({
+      contextoMarca: "Marca familiar, sin inversores externos.",
+    });
+    expect(conContexto.setup.contenido).toContain(
+      "Marca familiar, sin inversores externos."
+    );
+  });
+
+  it("changes the account-stage line in the setup without touching the rest of the plan", () => {
+    const nueva = buildKit({ etapaCuenta: "nueva" });
+    const establecida = buildKit({ etapaCuenta: "establecida" });
+
+    expect(nueva.setup.contenido).toContain("sin audiencia todavía");
+    expect(establecida.setup.contenido).not.toContain("sin audiencia todavía");
+    expect(establecida.setup.contenido).toContain("ya tiene audiencia");
+    expect(nueva.setup.contenido).not.toContain("ya tiene audiencia");
+
+    expect(nueva.semanas).toEqual(establecida.semanas);
   });
 
   it("inserts the trends snippet for the chosen platform into the setup prompt", () => {

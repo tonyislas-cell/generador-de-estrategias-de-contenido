@@ -34,12 +34,17 @@ export type EstiloGancho =
   | "humor"
   | "curiosidad";
 
+export type EtapaCuenta = "nueva" | "establecida";
+
 export interface WizardAnswers {
   // Capa 1 — Contexto fijo
   nicho?: string;
   audiencia?: string;
   plataformas?: Plataforma[];
   tono?: Tono;
+  /** Opcional: quien no tiene nada que agregar más allá de nicho/audiencia lo deja vacío. */
+  contextoMarca?: string;
+  etapaCuenta?: EtapaCuenta;
 
   // Capa 2 — Objetivo
   objetivo?: Objetivo;
