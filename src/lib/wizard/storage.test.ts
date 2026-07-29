@@ -15,12 +15,14 @@ describe("wizard storage", () => {
       answers: { nicho: "Finanzas personales" },
       currentStepId: "objetivo",
       duracion: "1_mes",
+      modelos: ["claude", "chatgpt"],
     });
 
     expect(loadWizardState()).toEqual({
       answers: { nicho: "Finanzas personales" },
       currentStepId: "objetivo",
       duracion: "1_mes",
+      modelos: ["claude", "chatgpt"],
     });
   });
 
@@ -31,6 +33,15 @@ describe("wizard storage", () => {
     );
 
     expect(loadWizardState()?.duracion).toBeUndefined();
+  });
+
+  it("loads a state saved before modelos existed without it", () => {
+    window.localStorage.setItem(
+      "viral-content-kit:wizard:v1",
+      JSON.stringify({ answers: {}, currentStepId: "contexto" })
+    );
+
+    expect(loadWizardState()?.modelos).toBeUndefined();
   });
 
   it("returns null and doesn't throw when the stored value is corrupt JSON", () => {

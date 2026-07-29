@@ -1,4 +1,4 @@
-import type { Duracion } from "../prompt-kit/types";
+import type { Duracion, ModeloIA } from "../prompt-kit/types";
 import type { WizardAnswers, WizardPosition } from "./types";
 
 const STORAGE_KEY = "viral-content-kit:wizard:v1";
@@ -6,10 +6,10 @@ const STORAGE_KEY = "viral-content-kit:wizard:v1";
 export interface StoredWizardState {
   answers: WizardAnswers;
   /**
-   * El nombre del campo se conserva aunque ahora también admita "result":
-   * está persistido, y renombrarlo obligaría a migrar datos guardados sin
-   * ganar nada. Los valores viejos siguen siendo válidos, así que la clave
-   * `:v1` tampoco necesita subir de versión.
+   * El nombre del campo se conserva aunque ahora también admita "modelos" y
+   * "result": está persistido, y renombrarlo obligaría a migrar datos
+   * guardados sin ganar nada. Los valores viejos siguen siendo válidos, así
+   * que la clave `:v1` tampoco necesita subir de versión.
    */
   currentStepId: WizardPosition;
   /**
@@ -17,6 +17,8 @@ export interface StoredWizardState {
    * siendo válidos sin migración: `useWizard` completa el default al hidratar.
    */
   duracion?: Duracion;
+  /** Opcional por el mismo motivo que `duracion`: no existía antes de este ticket. */
+  modelos?: ModeloIA[];
 }
 
 function isStoredWizardState(value: unknown): value is StoredWizardState {

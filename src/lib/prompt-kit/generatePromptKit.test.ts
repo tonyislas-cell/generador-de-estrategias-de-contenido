@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { generatePromptKit } from "./generatePromptKit";
-import { getBloquesEnOrden, type Duracion, type PromptKit } from "./types";
+import { getBloquesEnOrden, type Duracion, type ModeloIA, type PromptKit } from "./types";
 import { toKitAnswers } from "./kit-answers";
 import type { TrendsSnippet } from "@/lib/trends/types";
 import type { Plataforma, WizardAnswers } from "@/lib/wizard/types";
@@ -66,7 +66,8 @@ const SNIPPET_BY_PLATAFORMA: Record<Plataforma, TrendsSnippet> = {
 /** Construye un kit desde respuestas crudas, usando fixtures de tendencias locales en vez de Supabase. */
 function buildKit(
   overrides: Partial<WizardAnswers> = {},
-  duracion: Duracion = "14_dias"
+  duracion: Duracion = "14_dias",
+  modelo: ModeloIA = "claude"
 ): PromptKit {
   const answers = toKitAnswers({ ...BASE, ...overrides });
   if (!answers) throw new Error("Las respuestas de prueba están incompletas");
@@ -74,7 +75,7 @@ function buildKit(
   return generatePromptKit(
     answers,
     SNIPPET_BY_PLATAFORMA[answers.plataformas[0]],
-    "claude",
+    modelo,
     duracion
   );
 }
@@ -231,5 +232,38 @@ describe("generatePromptKit", () => {
 
   it("is deterministic for identical input", () => {
     expect(buildKit()).toEqual(buildKit());
+  });
+});
+
+describe("cross-model isolation", () => {
+  /** Marcadores de prosa/estructura exclusivos de cada adaptador, para detectar fugas. */
+  const MARCADOR_POR_MODELO: Record<ModeloIA, string> = {
+    claude: "<rol>",
+    chatgpt: "## Prohibido",
+    gemini: "Regla 1 —",
+  };
+
+  it("never lets one adapter's prompt-engineering markers appear in another model's kit", () => {
+    const modelos = Object.keys(MARCADOR_POR_MODELO) as ModeloIA[];
+    const textoPorModelo = Object.fromEntries(
+      modelos.map((modelo) => [modelo, textoCompleto(buildKit({}, "14_dias", modelo))])
+    ) as Record<ModeloIA, string>;
+
+    for (const propio of modelos) {
+      expect(textoPorModelo[propio]).toContain(MARCADOR_POR_MODELO[propio]);
+
+      for (const otro of modelos) {
+        if (otro === propio) continue;
+        expect(
+          textoPorModelo[otro],
+          `el kit de ${otro} filtró el marcador de ${propio}`
+        ).not.toContain(MARCADOR_POR_MODELO[propio]);
+      }
+    }
+  });
+
+  it("keeps the modelo field on the kit consistent with what was requested", () => {
+    expect(buildKit({}, "14_dias", "chatgpt").modelo).toBe("chatgpt");
+    expect(buildKit({}, "14_dias", "gemini").modelo).toBe("gemini");
   });
 });

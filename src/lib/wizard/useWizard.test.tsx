@@ -123,7 +123,7 @@ describe("useWizard", () => {
     expect(reloaded.result.current.currentStep?.id).toBe("contexto");
   });
 
-  it("goNext from the summary reaches the result status", async () => {
+  it("goNext from the summary reaches the modelos status, then the result status", async () => {
     const { result } = renderHook(() => useWizard());
     await waitFor(() => expect(result.current.status).toBe("in-progress"));
 
@@ -132,16 +132,24 @@ describe("useWizard", () => {
     expect(result.current.status).toBe("summary");
 
     act(() => result.current.goNext());
+    expect(result.current.status).toBe("modelos");
 
+    act(() => result.current.goNext());
     expect(result.current.status).toBe("result");
   });
 
-  it("reports no current step while on the result screen", async () => {
+  it("reports no current step while on the modelos or result screens", async () => {
     const { result } = renderHook(() => useWizard());
     await waitFor(() => expect(result.current.status).toBe("in-progress"));
 
     act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
     for (let i = 0; i < 6; i++) act(() => result.current.goNext());
+    expect(result.current.status).toBe("modelos");
+    expect(result.current.currentStep).toBeNull();
+    expect(result.current.isLastStep).toBe(false);
+    expect(result.current.canGoBack).toBe(false);
+
+    act(() => result.current.goNext());
     expect(result.current.status).toBe("result");
 
     // Guards the index arithmetic: a position that is not a step must not
@@ -156,22 +164,50 @@ describe("useWizard", () => {
     await waitFor(() => expect(result.current.status).toBe("in-progress"));
 
     act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
-    for (let i = 0; i < 7; i++) act(() => result.current.goNext());
+    for (let i = 0; i < 8; i++) act(() => result.current.goNext());
 
     expect(result.current.status).toBe("result");
   });
 
-  it("goBack from the result returns to the summary", async () => {
+  it("goBack from the result returns to modelos, and from modelos to the summary", async () => {
     const { result } = renderHook(() => useWizard());
     await waitFor(() => expect(result.current.status).toBe("in-progress"));
 
     act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
-    for (let i = 0; i < 6; i++) act(() => result.current.goNext());
+    for (let i = 0; i < 7; i++) act(() => result.current.goNext());
     expect(result.current.status).toBe("result");
 
     act(() => result.current.goBack());
+    expect(result.current.status).toBe("modelos");
 
+    act(() => result.current.goBack());
     expect(result.current.status).toBe("summary");
+  });
+
+  it("keeps the selected modelos when going back from the result to add more", async () => {
+    const { result } = renderHook(() => useWizard());
+    await waitFor(() => expect(result.current.status).toBe("in-progress"));
+
+    act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
+    for (let i = 0; i < 5; i++) act(() => result.current.goNext());
+    expect(result.current.status).toBe("summary");
+
+    act(() => result.current.goNext());
+    expect(result.current.status).toBe("modelos");
+    act(() => result.current.setModelos(["claude", "chatgpt"]));
+    act(() => result.current.goNext());
+    expect(result.current.status).toBe("result");
+
+    act(() => result.current.goBack());
+    expect(result.current.status).toBe("modelos");
+    // The whole point of going back here is adding models without losing the
+    // ones already picked — nothing should have cleared the selection.
+    expect(result.current.modelos).toEqual(["claude", "chatgpt"]);
+
+    act(() => result.current.setModelos(["claude", "chatgpt", "gemini"]));
+    act(() => result.current.goNext());
+    expect(result.current.status).toBe("result");
+    expect(result.current.modelos).toEqual(["claude", "chatgpt", "gemini"]);
   });
 
   it("resumes on the result screen after a reload", async () => {
@@ -179,7 +215,7 @@ describe("useWizard", () => {
     await waitFor(() => expect(first.result.current.status).toBe("in-progress"));
 
     act(() => first.result.current.updateAnswers({ objetivo: "autoridad" }));
-    for (let i = 0; i < 6; i++) act(() => first.result.current.goNext());
+    for (let i = 0; i < 7; i++) act(() => first.result.current.goNext());
     expect(first.result.current.status).toBe("result");
 
     const second = renderHook(() => useWizard());
@@ -236,5 +272,56 @@ describe("useWizard", () => {
     act(() => result.current.restart());
 
     expect(result.current.duracion).toBe("14_dias");
+  });
+
+  it("defaults modelos to an empty array", async () => {
+    const { result } = renderHook(() => useWizard());
+    await waitFor(() => expect(result.current.status).toBe("in-progress"));
+
+    expect(result.current.modelos).toEqual([]);
+  });
+
+  it("setModelos updates the selection and persists it", async () => {
+    const { result } = renderHook(() => useWizard());
+    await waitFor(() => expect(result.current.status).toBe("in-progress"));
+
+    act(() => result.current.setModelos(["claude", "chatgpt"]));
+
+    expect(result.current.modelos).toEqual(["claude", "chatgpt"]);
+    expect(loadWizardState()?.modelos).toEqual(["claude", "chatgpt"]);
+  });
+
+  it("resumes the saved modelos after a reload", async () => {
+    const first = renderHook(() => useWizard());
+    await waitFor(() => expect(first.result.current.status).toBe("in-progress"));
+
+    act(() => first.result.current.setModelos(["gemini"]));
+
+    const second = renderHook(() => useWizard());
+    await waitFor(() => expect(second.result.current.status).toBe("in-progress"));
+
+    expect(second.result.current.modelos).toEqual(["gemini"]);
+  });
+
+  it("falls back to an empty array when resuming a state saved before modelos existed", async () => {
+    window.localStorage.setItem(
+      "viral-content-kit:wizard:v1",
+      JSON.stringify({ answers: {}, currentStepId: "contexto" })
+    );
+
+    const { result } = renderHook(() => useWizard());
+    await waitFor(() => expect(result.current.status).toBe("in-progress"));
+
+    expect(result.current.modelos).toEqual([]);
+  });
+
+  it("restart resets modelos back to the default", async () => {
+    const { result } = renderHook(() => useWizard());
+    await waitFor(() => expect(result.current.status).toBe("in-progress"));
+
+    act(() => result.current.setModelos(["claude", "gemini"]));
+    act(() => result.current.restart());
+
+    expect(result.current.modelos).toEqual([]);
   });
 });

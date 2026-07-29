@@ -1,16 +1,7 @@
 import type { Option, Plataforma } from "@/lib/wizard/types";
 
-/**
- * Modelos de IA para los que sabemos generar un kit.
- *
- * Es una unión de un solo miembro a propósito. `ADAPTERS` es un
- * `Record<ModeloIA, PromptAdapter>`, así que hoy es exhaustivo sin ramas
- * muertas ni errores en runtime. Cuando se agreguen ChatGPT y Gemini, ampliar
- * esta unión hace que TypeScript falle exactamente en `adapters/index.ts`, que
- * es el archivo que hay que tocar. No la "arregles" a tres miembros antes de
- * tener los adaptadores.
- */
-export type ModeloIA = "claude";
+/** Modelos de IA para los que sabemos generar un kit. */
+export type ModeloIA = "claude" | "chatgpt" | "gemini";
 
 export type Duracion = "14_dias" | "1_mes";
 

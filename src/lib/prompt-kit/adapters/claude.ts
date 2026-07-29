@@ -1,5 +1,6 @@
 import type { PromptContext } from "../context";
 import type { MisionSemana } from "../misiones";
+import { bullets, lines, present, sections } from "./prose";
 import type { PromptAdapter } from "./types";
 
 /**
@@ -20,19 +21,6 @@ import type { PromptAdapter } from "./types";
  * - Razonamiento previo acotado dentro de `<analisis>`, que Claude respeta como
  *   espacio de borrador separado del entregable.
  */
-
-const bullets = (items: string[]): string =>
-  items.map((item) => `- ${item}`).join("\n");
-
-const present = (value: string | null): value is string => value !== null;
-
-/** Une líneas dentro de una sección, descartando las que no aplican. */
-const lines = (values: (string | null)[]): string =>
-  values.filter(present).join("\n");
-
-/** Une secciones con una línea en blanco entre ellas, descartando las que no aplican. */
-const sections = (values: (string | null)[]): string =>
-  values.filter(present).join("\n\n");
 
 // ---------------------------------------------------------------- setup
 

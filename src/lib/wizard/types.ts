@@ -69,5 +69,5 @@ export type StepId =
   | "gancho"
   | "oferta";
 
-/** Dónde está parado el usuario: en un paso, en el resumen, o en el kit. */
-export type WizardPosition = StepId | "summary" | "result";
+/** Dónde está parado el usuario: en un paso, en el resumen, eligiendo modelo(s), o en el kit. */
+export type WizardPosition = StepId | "summary" | "modelos" | "result";

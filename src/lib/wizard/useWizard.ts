@@ -1,15 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { Duracion } from "../prompt-kit/types";
+import type { Duracion, ModeloIA } from "../prompt-kit/types";
 import { getVisibleSteps, type StepDefinition } from "./steps";
 import { clearWizardState, loadWizardState, saveWizardState } from "./storage";
 import type { StepId, WizardAnswers, WizardPosition } from "./types";
 
-export type WizardStatus = "loading" | "in-progress" | "summary" | "result";
+export type WizardStatus =
+  | "loading"
+  | "in-progress"
+  | "summary"
+  | "modelos"
+  | "result";
 
 const FIRST_STEP_ID: StepId = "contexto";
 const DEFAULT_DURACION: Duracion = "14_dias";
+const DEFAULT_MODELOS: ModeloIA[] = [];
 
 export interface UseWizardResult {
   status: WizardStatus;
@@ -22,6 +28,8 @@ export interface UseWizardResult {
   isCurrentStepAnswered: boolean;
   duracion: Duracion;
   setDuracion: (duracion: Duracion) => void;
+  modelos: ModeloIA[];
+  setModelos: (modelos: ModeloIA[]) => void;
   updateAnswers: (partial: Partial<WizardAnswers>) => void;
   goNext: () => void;
   goBack: () => void;
@@ -33,6 +41,7 @@ export function useWizard(): UseWizardResult {
   const [currentStepId, setCurrentStepId] =
     useState<WizardPosition>(FIRST_STEP_ID);
   const [duracion, setDuracion] = useState<Duracion>(DEFAULT_DURACION);
+  const [modelos, setModelos] = useState<ModeloIA[]>(DEFAULT_MODELOS);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
@@ -44,6 +53,7 @@ export function useWizard(): UseWizardResult {
       setAnswers(stored.answers);
       setCurrentStepId(stored.currentStepId);
       setDuracion(stored.duracion ?? DEFAULT_DURACION);
+      setModelos(stored.modelos ?? DEFAULT_MODELOS);
     }
     setIsHydrated(true);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -51,15 +61,18 @@ export function useWizard(): UseWizardResult {
 
   useEffect(() => {
     if (!isHydrated) return;
-    saveWizardState({ answers, currentStepId, duracion });
-  }, [isHydrated, answers, currentStepId, duracion]);
+    saveWizardState({ answers, currentStepId, duracion, modelos });
+  }, [isHydrated, answers, currentStepId, duracion, modelos]);
 
   const steps = useMemo(() => getVisibleSteps(answers), [answers]);
 
   // Todas las ramas de índice pasan por acá. Sin este predicado, cualquier
   // posición que no sea un paso cae en `findIndex` → -1 → índice 0, y el hook
   // devolvería un paso real mientras la pantalla mostrada es otra.
-  const isOnStep = currentStepId !== "summary" && currentStepId !== "result";
+  const isOnStep =
+    currentStepId !== "summary" &&
+    currentStepId !== "modelos" &&
+    currentStepId !== "result";
 
   const rawIndex = isOnStep
     ? steps.findIndex((step) => step.id === currentStepId)
@@ -71,9 +84,11 @@ export function useWizard(): UseWizardResult {
     ? "loading"
     : currentStepId === "summary"
       ? "summary"
-      : currentStepId === "result"
-        ? "result"
-        : "in-progress";
+      : currentStepId === "modelos"
+        ? "modelos"
+        : currentStepId === "result"
+          ? "result"
+          : "in-progress";
   const isLastStep = isOnStep && currentStepIndex === steps.length - 1;
 
   const updateAnswers = useCallback((partial: Partial<WizardAnswers>) => {
@@ -82,8 +97,12 @@ export function useWizard(): UseWizardResult {
 
   const goNext = useCallback(() => {
     if (currentStepId === "result") return;
-    if (currentStepId === "summary") {
+    if (currentStepId === "modelos") {
       setCurrentStepId("result");
+      return;
+    }
+    if (currentStepId === "summary") {
+      setCurrentStepId("modelos");
       return;
     }
     if (isLastStep) {
@@ -96,6 +115,10 @@ export function useWizard(): UseWizardResult {
 
   const goBack = useCallback(() => {
     if (currentStepId === "result") {
+      setCurrentStepId("modelos");
+      return;
+    }
+    if (currentStepId === "modelos") {
       setCurrentStepId("summary");
       return;
     }
@@ -113,6 +136,7 @@ export function useWizard(): UseWizardResult {
     setAnswers({});
     setCurrentStepId(FIRST_STEP_ID);
     setDuracion(DEFAULT_DURACION);
+    setModelos(DEFAULT_MODELOS);
     clearWizardState();
   }, []);
 
@@ -127,6 +151,8 @@ export function useWizard(): UseWizardResult {
     isCurrentStepAnswered: currentStep ? currentStep.isAnswered(answers) : true,
     duracion,
     setDuracion,
+    modelos,
+    setModelos,
     updateAnswers,
     goNext,
     goBack,

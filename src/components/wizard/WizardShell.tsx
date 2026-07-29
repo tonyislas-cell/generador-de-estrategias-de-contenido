@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { useWizard } from "@/lib/wizard/useWizard";
 import type { StepId } from "@/lib/wizard/types";
 import { DURACION_OPTIONS } from "@/lib/prompt-kit/types";
+import { MODELO_OPTIONS } from "@/lib/prompt-kit/adapters";
 import { Step1Contexto } from "./Step1Contexto";
 import { Step2Objetivo } from "./Step2Objetivo";
 import { Step3Formato } from "./Step3Formato";
@@ -15,6 +16,7 @@ import { Step5Gancho } from "./Step5Gancho";
 import { Step6Oferta } from "./Step6Oferta";
 import { WizardSummary } from "./WizardSummary";
 import { ChoiceCardGroup } from "./ChoiceCardGroup";
+import { CheckboxGroup } from "./CheckboxGroup";
 import { PromptKitResult } from "@/components/kit/PromptKitResult";
 import type { StepProps } from "./step-props";
 
@@ -43,9 +45,40 @@ export function WizardShell() {
       <PromptKitResult
         answers={wizard.answers}
         duracion={wizard.duracion}
+        modelos={wizard.modelos}
         onBack={wizard.goBack}
         onRestart={wizard.restart}
       />
+    );
+  }
+
+  if (wizard.status === "modelos") {
+    return (
+      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-6 py-12">
+        <div>
+          <h1 className="text-xl font-semibold text-foreground">
+            ¿Con qué IA vas a generar tus prompts?
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Puedes elegir más de una — vas a poder pegar el kit resultante en
+            cada una, con una pestaña por modelo.
+          </p>
+        </div>
+        <CheckboxGroup
+          name="modelos"
+          options={MODELO_OPTIONS}
+          selected={wizard.modelos}
+          onChange={wizard.setModelos}
+        />
+        <div className="flex flex-wrap gap-3">
+          <Button onClick={wizard.goNext} disabled={wizard.modelos.length === 0}>
+            Generar mi kit de prompts
+          </Button>
+          <Button variant="outline" onClick={wizard.goBack}>
+            Atrás
+          </Button>
+        </div>
+      </div>
     );
   }
 
@@ -65,7 +98,7 @@ export function WizardShell() {
           />
         </div>
         <div className="flex flex-wrap gap-3">
-          <Button onClick={wizard.goNext}>Generar mi kit de prompts</Button>
+          <Button onClick={wizard.goNext}>Elegir modelo(s) de IA</Button>
           <Button variant="outline" onClick={wizard.goBack}>
             Corregir una respuesta
           </Button>

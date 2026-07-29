@@ -56,6 +56,7 @@ describe("PromptKitResult", () => {
       <PromptKitResult
         answers={COMPLETE}
         duracion="14_dias"
+        modelos={["claude"]}
         onBack={noop}
         onRestart={noop}
       />
@@ -78,6 +79,7 @@ describe("PromptKitResult", () => {
       <PromptKitResult
         answers={COMPLETE}
         duracion="1_mes"
+        modelos={["claude"]}
         onBack={noop}
         onRestart={noop}
       />
@@ -95,7 +97,7 @@ describe("PromptKitResult", () => {
       "Prompt 5 — Semana 4",
     ]);
     expect(await screen.findByRole("banner")).toHaveTextContent(
-      "Plan de 1 mes · TikTok · para Claude"
+      "Plan de 1 mes · TikTok"
     );
   });
 
@@ -105,6 +107,7 @@ describe("PromptKitResult", () => {
       <PromptKitResult
         answers={COMPLETE}
         duracion="14_dias"
+        modelos={["claude"]}
         onBack={noop}
         onRestart={noop}
       />
@@ -124,6 +127,7 @@ describe("PromptKitResult", () => {
       <PromptKitResult
         answers={COMPLETE}
         duracion="14_dias"
+        modelos={["claude"]}
         onBack={noop}
         onRestart={noop}
       />
@@ -134,12 +138,13 @@ describe("PromptKitResult", () => {
     ).toHaveLength(3);
   });
 
-  it("names the platform and target model the kit was built for", async () => {
+  it("names the platform in the header, without picking a single model", async () => {
     mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
     render(
       <PromptKitResult
         answers={COMPLETE}
         duracion="14_dias"
+        modelos={["claude"]}
         onBack={noop}
         onRestart={noop}
       />
@@ -148,7 +153,7 @@ describe("PromptKitResult", () => {
     // Scoped to the header on purpose: the platform name also appears inside
     // the prompt text itself, so an unscoped query matches several nodes.
     expect(await screen.findByRole("banner")).toHaveTextContent(
-      "Plan de 14 días · TikTok · para Claude"
+      "Plan de 14 días · TikTok"
     );
   });
 
@@ -158,6 +163,7 @@ describe("PromptKitResult", () => {
       <PromptKitResult
         answers={{}}
         duracion="14_dias"
+        modelos={["claude"]}
         onBack={onBack}
         onRestart={noop}
       />
@@ -168,7 +174,24 @@ describe("PromptKitResult", () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Copiar" })).toBeNull();
     expect(
-      screen.getByRole("button", { name: "Volver al resumen" })
+      screen.getByRole("button", { name: "Elegir otros modelos" })
+    ).toBeInTheDocument();
+    expect(mockGetTrendsSnippet).not.toHaveBeenCalled();
+  });
+
+  it("shows the same recoverable message when no model was selected, without touching the network", () => {
+    render(
+      <PromptKitResult
+        answers={COMPLETE}
+        duracion="14_dias"
+        modelos={[]}
+        onBack={noop}
+        onRestart={noop}
+      />
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Faltan respuestas" })
     ).toBeInTheDocument();
     expect(mockGetTrendsSnippet).not.toHaveBeenCalled();
   });
@@ -179,6 +202,7 @@ describe("PromptKitResult", () => {
       <PromptKitResult
         answers={COMPLETE}
         duracion="14_dias"
+        modelos={["claude"]}
         onBack={noop}
         onRestart={noop}
       />
@@ -193,6 +217,7 @@ describe("PromptKitResult", () => {
       <PromptKitResult
         answers={COMPLETE}
         duracion="14_dias"
+        modelos={["claude"]}
         onBack={noop}
         onRestart={noop}
       />
@@ -217,6 +242,7 @@ describe("PromptKitResult", () => {
       <PromptKitResult
         answers={COMPLETE}
         duracion="14_dias"
+        modelos={["claude"]}
         onBack={noop}
         onRestart={noop}
       />
@@ -234,6 +260,7 @@ describe("PromptKitResult", () => {
       <PromptKitResult
         answers={COMPLETE}
         duracion="14_dias"
+        modelos={["claude"]}
         onBack={noop}
         onRestart={noop}
       />
@@ -242,5 +269,86 @@ describe("PromptKitResult", () => {
     expect(
       await screen.findByRole("heading", { name: "Prompt 1 — Configuración" })
     ).toBeInTheDocument();
+  });
+
+  describe("multiple models", () => {
+    it("shows one tab per selected model, and no others", async () => {
+      mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
+      render(
+        <PromptKitResult
+          answers={COMPLETE}
+          duracion="14_dias"
+          modelos={["claude", "chatgpt"]}
+          onBack={noop}
+          onRestart={noop}
+        />
+      );
+
+      const tabs = await screen.findAllByRole("tab");
+      expect(tabs.map((tab) => tab.textContent)).toEqual(["Claude", "ChatGPT"]);
+      expect(screen.queryByRole("tab", { name: "Gemini" })).toBeNull();
+    });
+
+    it("orders tabs consistently regardless of selection order", async () => {
+      mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
+      render(
+        <PromptKitResult
+          answers={COMPLETE}
+          duracion="14_dias"
+          modelos={["gemini", "claude", "chatgpt"]}
+          onBack={noop}
+          onRestart={noop}
+        />
+      );
+
+      const tabs = await screen.findAllByRole("tab");
+      expect(tabs.map((tab) => tab.textContent)).toEqual([
+        "Claude",
+        "ChatGPT",
+        "Gemini",
+      ]);
+    });
+
+    it("fetches trends only once no matter how many models are selected", async () => {
+      mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
+      render(
+        <PromptKitResult
+          answers={COMPLETE}
+          duracion="14_dias"
+          modelos={["claude", "chatgpt", "gemini"]}
+          onBack={noop}
+          onRestart={noop}
+        />
+      );
+
+      await screen.findAllByRole("tab");
+
+      expect(mockGetTrendsSnippet).toHaveBeenCalledTimes(1);
+    });
+
+    it("switching tabs shows that model's own kit content", async () => {
+      mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
+      render(
+        <PromptKitResult
+          answers={COMPLETE}
+          duracion="14_dias"
+          modelos={["claude", "chatgpt"]}
+          onBack={noop}
+          onRestart={noop}
+        />
+      );
+
+      await screen.findAllByRole("tab");
+      expect(
+        screen.getByText(/Abre Claude en una conversación nueva/)
+      ).toBeInTheDocument();
+
+      // Radix's TabsTrigger switches tabs on mousedown, not on click.
+      fireEvent.mouseDown(screen.getByRole("tab", { name: "ChatGPT" }));
+
+      expect(
+        await screen.findByText(/Abre ChatGPT en una conversación nueva/)
+      ).toBeInTheDocument();
+    });
   });
 });
