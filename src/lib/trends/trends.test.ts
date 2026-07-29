@@ -7,7 +7,7 @@ vi.mock("./repository", () => ({
   trendsRepository: { getByPlatform: (...args: unknown[]) => getByPlatform(...args) },
 }));
 
-const { getTrendsSnippet } = await import("./index");
+const { getAllTrends, getTrendsSnippet } = await import("./index");
 
 const SNIPPET: TrendsSnippet = {
   plataforma: "tiktok",
@@ -38,5 +38,32 @@ describe("getTrendsSnippet", () => {
     getByPlatform.mockRejectedValueOnce(failure);
 
     await expect(getTrendsSnippet("youtube_shorts")).rejects.toBe(failure);
+  });
+});
+
+describe("getAllTrends", () => {
+  it("returns every supported platform's snippet, keyed by platform", async () => {
+    getByPlatform.mockImplementation(async (plataforma: string) => ({
+      ...SNIPPET,
+      plataforma,
+    }));
+
+    const all = await getAllTrends();
+
+    expect(Object.keys(all).sort()).toEqual(
+      ["instagram_reels", "linkedin", "tiktok", "youtube_shorts"].sort()
+    );
+    expect(all.tiktok?.plataforma).toBe("tiktok");
+  });
+
+  it("uses null for a platform with no row instead of failing the whole batch", async () => {
+    getByPlatform.mockImplementation(async (plataforma: string) =>
+      plataforma === "linkedin" ? null : { ...SNIPPET, plataforma }
+    );
+
+    const all = await getAllTrends();
+
+    expect(all.linkedin).toBeNull();
+    expect(all.tiktok?.plataforma).toBe("tiktok");
   });
 });

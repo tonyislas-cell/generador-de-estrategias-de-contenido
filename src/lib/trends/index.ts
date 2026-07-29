@@ -1,3 +1,4 @@
+import { PLATAFORMA_OPTIONS } from "@/lib/wizard/options";
 import type { Plataforma } from "@/lib/wizard/types";
 import { trendsRepository } from "./repository";
 import type { TrendsSnippet } from "./types";
@@ -21,4 +22,23 @@ export async function getTrendsSnippet(
     throw new Error(`No hay tendencias cargadas para la plataforma "${plataforma}".`);
   }
   return snippet;
+}
+
+/**
+ * Para el panel de admin: trae las 4 plataformas en paralelo. A diferencia
+ * de `getTrendsSnippet`, no rechaza si a una plataforma le falta la fila —
+ * un dato corrupto en una sola plataforma no debe tumbar el panel entero,
+ * así que esa plataforma llega como `null` y el form arranca vacío.
+ */
+export async function getAllTrends(): Promise<
+  Record<Plataforma, TrendsSnippet | null>
+> {
+  const entries = await Promise.all(
+    PLATAFORMA_OPTIONS.map(async (option) => [
+      option.value,
+      await trendsRepository.getByPlatform(option.value),
+    ] as const)
+  );
+
+  return Object.fromEntries(entries) as Record<Plataforma, TrendsSnippet | null>;
 }

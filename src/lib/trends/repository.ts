@@ -12,6 +12,7 @@ interface TrendsSnippetRow {
   convenciones_copy: string;
 }
 
+// Inverso de este mapeo: `updateTrendsSnippet` en ./admin-repository.ts.
 function mapRowToSnippet(row: TrendsSnippetRow): TrendsSnippet {
   return {
     plataforma: row.plataforma,
