@@ -55,11 +55,11 @@ export function WizardShell() {
   if (wizard.status === "modelos") {
     return (
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-6 py-12">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground">
+        <div className="grid gap-2">
+          <h1 className="text-2xl text-foreground sm:text-3xl">
             ¿Con qué IA vas a generar tus prompts?
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground">
             Puedes elegir más de una — vas a poder pegar el kit resultante en
             cada una, con una pestaña por modelo.
           </p>
@@ -87,7 +87,7 @@ export function WizardShell() {
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-6 py-12">
         <WizardSummary answers={wizard.answers} />
         <div className="grid gap-2">
-          <span className="text-sm font-medium text-foreground">
+          <span className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
             Duración del plan
           </span>
           <ChoiceCardGroup
@@ -118,14 +118,17 @@ export function WizardShell() {
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-8 px-6 py-12">
-      <div className="grid gap-2">
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>
-            Paso {wizard.currentStepIndex + 1} de {wizard.steps.length}
-          </span>
-          <span>{currentStep?.title}</span>
-        </div>
+      <div className="grid gap-3">
+        <span className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
+          Paso {wizard.currentStepIndex + 1} de {wizard.steps.length}
+        </span>
         <Progress value={progressValue} />
+        {/* El título del paso pasa de una nota gris al costado de la barra a
+            ser el titular de la pantalla. Los pasos no traen encabezado propio,
+            así que hasta ahora el cuestionario no tenía ancla visual. */}
+        <h1 className="text-2xl text-foreground sm:text-3xl">
+          {currentStep?.title}
+        </h1>
       </div>
 
       <motion.div

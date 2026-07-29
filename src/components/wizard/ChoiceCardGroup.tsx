@@ -1,7 +1,6 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 import type { Option } from "@/lib/wizard/types";
+import { OptionCard } from "./OptionCard";
 
 interface ChoiceCardGroupProps<T extends string> {
   name: string;
@@ -24,26 +23,17 @@ export function ChoiceCardGroup<T extends string>({
     >
       {options.map((option) => {
         const id = `${name}-${option.value}`;
-        const checked = value === option.value;
         return (
-          <Label
+          <OptionCard
             key={option.value}
             htmlFor={id}
-            className={cn(
-              "flex cursor-pointer items-start gap-3 rounded-lg border border-border p-4 font-normal transition-colors hover:bg-muted",
-              checked && "border-primary bg-primary/5"
-            )}
-          >
-            <RadioGroupItem value={option.value} id={id} className="mt-0.5" />
-            <span className="flex flex-col gap-1">
-              <span className="font-medium text-foreground">{option.label}</span>
-              {option.description ? (
-                <span className="text-sm text-muted-foreground">
-                  {option.description}
-                </span>
-              ) : null}
-            </span>
-          </Label>
+            checked={value === option.value}
+            label={option.label}
+            description={option.description}
+            control={
+              <RadioGroupItem value={option.value} id={id} className="mt-0.5" />
+            }
+          />
         );
       })}
     </RadioGroup>

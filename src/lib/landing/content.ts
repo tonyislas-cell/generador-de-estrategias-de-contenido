@@ -1,0 +1,155 @@
+/**
+ * Copy de la landing, como datos y en un solo lugar.
+ *
+ * Mismo criterio que `options.ts` o `descriptors.ts`: el texto que ve el
+ * usuario no vive suelto dentro del JSX, así los tests afirman contra una única
+ * fuente y no contra literales duplicados por toda la página.
+ *
+ * Lo que sí se deriva del producto (el arco semanal) se importa de
+ * `misiones.ts` en el componente que lo pinta, no se copia acá.
+ */
+
+export const MARCA = {
+  nombre: "El Brief",
+} as const;
+
+export const HERO = {
+  /** El `<h1>`. Se parte en dos para poder enfatizar la segunda mitad. */
+  titularLinea1: "No genera tu contenido.",
+  titularLinea2: "Genera las órdenes que tu IA necesita.",
+  entrada:
+    "Respondes un cuestionario sobre tu nicho, tu audiencia y cuánto tiempo tienes de verdad. Te llevas los prompts listos para pegar en Claude, ChatGPT o Gemini, y el plan sale con tu voz, no con la del modelo.",
+  cta: "Empezar el cuestionario",
+  ctaNota: "Gratis, sin cuenta y sin correo.",
+  /** Las tres tarjetas escalonadas que ilustran el mecanismo, sin una sola imagen. */
+  pila: [
+    {
+      etiqueta: "Prompt 1 — Configuración",
+      lineas: [
+        "<rol>",
+        "Eres estratega de contenido y",
+        "guionista de formato corto…",
+      ],
+    },
+    {
+      etiqueta: "Prompt 2 — Semana 1",
+      lineas: [
+        "<mision_de_la_semana>",
+        "Instalar la tesis: qué crees",
+        "que este nicho tiene mal…",
+      ],
+    },
+    {
+      etiqueta: "Prompt 3 — Semana 2",
+      lineas: [
+        "<continuidad>",
+        "Ganchos ya usados, ángulos",
+        "quemados, qué queda pendiente…",
+      ],
+    },
+  ],
+} as const;
+
+export const DONACION = {
+  url: "https://buymeacoffee.com/tonyisland",
+  etiqueta: "Invítame un café",
+  nota: "El proyecto es gratis y no tiene publicidad. Si te sirvió, esto ayuda a mantenerlo en pie.",
+} as const;
+
+export const COMO_FUNCIONA = {
+  eyebrow: "Cómo funciona",
+  titulo: "Tres pasos, y el tercero es el que importa",
+  pasos: [
+    {
+      titulo: "Respondes el cuestionario",
+      cuerpo:
+        "Doce preguntas, quince si estás lanzando algo. Nicho, audiencia, tono y estilo de gancho, pero también cuánto tiempo tienes por pieza y con qué equipo cuentas. Entre tres y cinco minutos.",
+      detalle:
+        "Esa última parte es la que evita que el plan te proponga cosas que no vas a poder grabar.",
+    },
+    {
+      titulo: "Eliges con qué IA y por cuánto tiempo",
+      cuerpo:
+        "Claude, ChatGPT o Gemini. Las tres si quieres: cada una recibe un prompt escrito para cómo lee ese modelo en particular, no el mismo texto copiado tres veces.",
+      detalle: "Plan de catorce días o de un mes.",
+    },
+    {
+      titulo: "Pegas los bloques de a uno",
+      cuerpo:
+        "Acá está la diferencia. No es un botón de «genérame treinta posts». Pegas el primero, esperas a que el modelo confirme que entendió tu contexto, y recién entonces el siguiente.",
+      detalle:
+        "Cada bloque semanal arrastra la memoria de lo ya usado, así la semana tres no te repite la semana uno.",
+    },
+  ],
+} as const;
+
+export const QUE_RECIBES = {
+  eyebrow: "Qué te llevas",
+  titulo: "Prompts, no contenido ya escrito",
+  entrada:
+    "Un bloque de configuración que instala el contexto, y después un bloque por semana. Todo en texto plano, tuyo para editar antes de pegarlo.",
+  bloques: {
+    titulo: "La estructura del kit",
+    setup: {
+      etiqueta: "Prompt 1 — Configuración",
+      cuerpo:
+        "Instala quién eres, a quién le hablas y qué no se puede escribir. El modelo confirma el contexto y se detiene: todavía no escribe guiones, y eso es a propósito.",
+    },
+    semanal: {
+      etiqueta: "Prompt 2 en adelante — un bloque por semana",
+      cuerpo:
+        "Cada uno trae la misión de esa semana, el número exacto de piezas que puedes sostener, y un control de calidad que el modelo se aplica a sí mismo antes de entregarte nada.",
+    },
+  },
+  extras: {
+    titulo: "Y además",
+    items: [
+      "Una pestaña por modelo, si elegiste más de uno.",
+      "Descarga del kit completo en .md para guardarlo o pasarlo a tu equipo.",
+      "Mecánicas reales de cada plataforma inyectadas en el prompt, incluida la lista de lo que ya está quemado.",
+    ],
+  },
+} as const;
+
+export const ARCO = {
+  eyebrow: "El arco semanal",
+  titulo: "Cada semana tiene un trabajo distinto",
+  entrada:
+    "Sin esto, cada bloque sería intercambiable con el anterior y el plan se sentiría como una lista de ideas sueltas en vez de una campaña. Estos son los arcos reales del plan de un mes.",
+  autoridad: "Si construyes autoridad",
+  lanzamiento: "Si estás lanzando algo",
+} as const;
+
+/**
+ * La lista de clichés vetados. Es un subconjunto de `<prohibiciones>`, la
+ * sección que los tres adaptadores inyectan en el prompt de configuración
+ * (`src/lib/prompt-kit/adapters/*.ts`). Se transcribe y no se importa porque
+ * ahí vive como prosa dentro de la plantilla, no como lista.
+ */
+export const PROHIBIDO = {
+  eyebrow: "Lo que tu kit prohíbe",
+  titulo: "El prompt trae una lista de lo que el modelo no puede escribir",
+  entrada:
+    "No es un pedido amable de «sé original». Son cadenas concretas que quedan vetadas antes de que el modelo escriba la primera línea.",
+  frases: [
+    "En este video te voy a contar…",
+    "Quédate hasta el final",
+    "3 tips que nadie te dice",
+    "el secreto que nadie quiere que sepas",
+    "¿Sabías que…?",
+    "En un mundo donde…",
+    "esto te va a volar la cabeza",
+    "No es magia, es método",
+  ],
+  citaTitulo: "La prueba del reemplazo",
+  cita: "Si puedes cambiar tu nicho por cualquier otro rubro y el guion sigue teniendo sentido, el guion está mal.",
+  citaPie:
+    "Es la primera de las siete reglas de escritura que van dentro del prompt de configuración.",
+} as const;
+
+export const CIERRE = {
+  titulo: "Tu próxima semana de contenido, en cinco minutos",
+  cuerpo:
+    "Sin cuenta, sin correo y sin rastreo. El contador de usos es un número que sube: no guarda tu IP, ni una cookie, ni una huella de navegador.",
+  cta: "Empezar el cuestionario",
+} as const;

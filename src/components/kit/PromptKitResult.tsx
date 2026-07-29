@@ -46,14 +46,17 @@ function KitPanel({ kit }: { kit: PromptKit }) {
       </div>
 
       <section className="grid gap-3" aria-label="Prompt de configuración">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+        {/* Es un `h2` por jerarquía del documento, pero visualmente es un
+            eyebrow: `typography.md` los define en la sans a 12px, así que
+            lleva `font-sans` explícito para no heredar el serif de titular. */}
+        <h2 className="font-sans text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
           Configuración
         </h2>
         <PromptBlockCard block={kit.setup} />
       </section>
 
       <section className="grid gap-3" aria-label="Bloques semanales">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+        <h2 className="font-sans text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
           Bloques semanales
         </h2>
         {kit.semanas.map((bloque) => (
@@ -108,7 +111,7 @@ export function PromptKitResult({
   if (!kitAnswers || modelos.length === 0) {
     return (
       <div className="mx-auto grid w-full max-w-xl flex-1 content-start gap-4 px-6 py-12">
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-2xl text-foreground sm:text-3xl">
           Faltan respuestas
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -136,7 +139,7 @@ export function PromptKitResult({
   if (state.status === "error") {
     return (
       <div className="mx-auto grid w-full max-w-xl flex-1 content-start gap-4 px-6 py-12">
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-2xl text-foreground sm:text-3xl">
           No pudimos cargar las tendencias
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -172,10 +175,10 @@ export function PromptKitResult({
   return (
     <div className="mx-auto grid w-full max-w-2xl flex-1 content-start gap-8 px-6 py-12">
       <header className="grid gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+        <h1 className="text-3xl tracking-tight text-foreground sm:text-4xl">
           Tu kit de prompts
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground">
           Plan de {DURACION_CONFIG[duracion].etiqueta} ·{" "}
           {plataformaPrincipal ? plataformaLabel(plataformaPrincipal) : ""}
         </p>

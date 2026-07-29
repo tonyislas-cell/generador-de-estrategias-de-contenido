@@ -4,12 +4,19 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Sistema de diseño: Terracotta.
+ * Los valores salen de `colors.md`, `radius.md` y `shadows.md` del paquete.
+ * Se conservan en hex, y no en oklch como venía el tema de fábrica, para que
+ * cada token sea rastreable contra la tabla del sistema de un vistazo.
+ */
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-dm-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-dm-serif);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,82 +46,141 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /*
+   * Escala de radio de `radius.md`: cuatro pasos fijos, no una progresión
+   * calculada. El sistema prohíbe valores fuera de esta escala, así que las
+   * variantes derivadas del tema de fábrica (radius * 0.6, * 1.4...) se
+   * reemplazan por los valores literales.
+   */
+  --radius-sm: 0.25rem; /* 4px  — checkbox y elementos diminutos */
+  --radius-md: 0.5rem; /* 8px  — badges, tooltips, ítems de menú */
+  --radius-lg: 1rem; /* 16px — botones, inputs, tarjetas, tabs, modales */
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --radius-4xl: 2.5rem;
+
+  /*
+   * Sombras cálidas de `shadows.md`. La base es marrón (43 29 20), nunca negro
+   * puro, para que la elevación se apoye en la crema sin ensuciarla de gris.
+   */
+  --shadow-2xs: 0 1px rgb(43 29 20 / 0.04);
+  --shadow-xs: 0 1px 2px 0 rgb(43 29 20 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(43 29 20 / 0.08), 0 1px 2px -1px rgb(43 29 20 / 0.06);
+  --shadow-md: 0 4px 8px -2px rgb(43 29 20 / 0.08), 0 2px 4px -2px rgb(43 29 20 / 0.06);
+  --shadow-lg: 0 10px 20px -4px rgb(43 29 20 / 0.1), 0 4px 8px -4px rgb(43 29 20 / 0.06);
+  --shadow-xl: 0 20px 30px -8px rgb(43 29 20 / 0.12), 0 8px 12px -6px rgb(43 29 20 / 0.08);
+  --shadow-2xl: 0 28px 56px -16px rgb(43 29 20 / 0.22);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /*
+   * Tres desvíos deliberados respecto de lo que pide el sistema, los tres por
+   * contraste medido (no estimado). Terracotta especifica el terracota `#C56A3C`
+   * como relleno de botón primario bajo etiqueta blanca y como color de los
+   * enlaces; medido da 3.82:1 y 3.49:1, y ambos reprueban el 4.5:1 de WCAG AA
+   * para texto chico. Así que `#C56A3C` queda para bordes, anillos y rellenos
+   * decorativos, y todo lo que lleve texto usa `brand-strong` `#9C4F25`, que
+   * mide 5.90:1 en blanco y 5.39:1 sobre la crema.
+   */
+  --background: #fbf4e7; /* neutral-primary-soft */
+  --foreground: #2b1d14; /* heading — 14.9:1 sobre la crema */
+
+  /* Terracotta invierte la convención de shadcn a propósito: la tarjeta es un
+     tono MÁS cálido y oscuro que la página, no más claro. La separación viene
+     del calor, porque el fondo nunca alterna. */
+  --card: #f3e8d8; /* neutral-tertiary */
+  --card-foreground: #2b1d14;
+  /* neutral-tertiary-medium — el hover de tarjeta interactiva que pide
+     `cards.md`. Va como token propio y no reusando `--border`, que da el mismo
+     hex pero significa otra cosa. */
+  --card-hover: #e2d9c8;
+  --popover: #f3e8d8;
+  --popover-foreground: #2b1d14;
+
+  --primary: #9c4f25; /* brand-strong — ver nota de contraste arriba */
+  --primary-foreground: #ffffff;
+  --secondary: #f3e8d8; /* neutral-primary-medium */
+  --secondary-foreground: #2b1d14;
+  --muted: #f3e8d8;
+  --muted-foreground: #5c4938; /* body — 7.8:1. `body-subtle` mide 4.24:1 y reprueba */
+  --accent: #fbede3; /* brand-softer */
+  --accent-foreground: #9c4f25;
+  --destructive: #b83a1f; /* danger — 5.24:1 */
+
+  --border: #e2d9c8; /* border-default, pergamino cálido */
+  --input: #e2d9c8;
+  --ring: #c56a3c; /* brand — es UI no textual, el umbral acá es 3:1 */
+
+  --radius: 1rem;
+
+  --chart-1: #c56a3c;
+  --chart-2: #d88b5c;
+  --chart-3: #5c8b82;
+  --chart-4: #9c5c9e;
+  --chart-5: #a89378;
+
+  --sidebar: #f3e8d8;
+  --sidebar-foreground: #2b1d14;
+  --sidebar-primary: #9c4f25;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #fbede3;
+  --sidebar-accent-foreground: #9c4f25;
+  --sidebar-border: #e2d9c8;
+  --sidebar-ring: #c56a3c;
+
+  /*
+   * Curva de salida fuerte. Las de CSS de fábrica son demasiado blandas y el
+   * movimiento se lee sin intención. `ease-in` nunca se usa en interfaz: arranca
+   * lento justo en el instante que el usuario está mirando, y se siente trabado.
+   */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #18110b; /* neutral-primary oscuro */
+  --foreground: #fbf4e7; /* 17.1:1 */
+
+  --card: #2b1d14; /* neutral-tertiary oscuro */
+  --card-foreground: #fbf4e7;
+  --card-hover: #3a2818;
+  --popover: #2b1d14;
+  --popover-foreground: #fbf4e7;
+
+  /* En oscuro la marca aclara a `#D8825A`, y ahí el blanco cae a 2.89:1.
+     La etiqueta pasa a tinta, que mide 5.63:1. */
+  --primary: #d8825a;
+  --primary-foreground: #2b1d14;
+  --secondary: #2b1d14;
+  --secondary-foreground: #fbf4e7;
+  --muted: #2b1d14;
+  --muted-foreground: #c8b89e; /* 9.6:1 */
+  --accent: #3d1f0e; /* brand-softer oscuro */
+  --accent-foreground: #e89971;
+  /* `fg-danger` y no el `danger` de fondo (#D54A2A): la variante destructive
+     del botón usa este token como *color de texto*, y #D54A2A mide 4.31:1
+     sobre el fondo oscuro, por debajo de AA. #E5704F pasa. */
+  --destructive: #e5704f;
+
+  --border: #3a2818;
+  --input: #3a2818;
+  --ring: #d8825a;
+
+  --chart-1: #d8825a;
+  --chart-2: #d88b5c;
+  --chart-3: #5c8b82;
+  --chart-4: #9c5c9e;
+  --chart-5: #a89378;
+
+  --sidebar: #2b1d14;
+  --sidebar-foreground: #fbf4e7;
+  --sidebar-primary: #d8825a;
+  --sidebar-primary-foreground: #2b1d14;
+  --sidebar-accent: #3d1f0e;
+  --sidebar-accent-foreground: #e89971;
+  --sidebar-border: #3a2818;
+  --sidebar-ring: #d8825a;
 }
 
 @layer base {
@@ -126,5 +192,34 @@
   }
   html {
     @apply font-sans;
+  }
+
+  /*
+   * Titulares en el serif display. Peso 400 a propósito: es una tipografía de
+   * display, y ponerla en bold la emborrona en lugar de darle jerarquía — la
+   * jerarquía la carga el tamaño y el interletrado negativo.
+   */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-normal;
+  }
+
+  /*
+   * Movimiento reducido: se conservan opacidad y color, que ayudan a entender
+   * qué cambió, y se elimina el desplazamiento, que es lo que marea.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

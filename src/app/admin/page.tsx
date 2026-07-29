@@ -130,7 +130,7 @@ export default function AdminPage() {
   return (
     <div className="mx-auto grid w-full max-w-2xl flex-1 content-start gap-8 px-6 py-12">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+        <h1 className="text-3xl tracking-tight text-foreground">
           Tendencias por plataforma
         </h1>
         <Button variant="ghost" onClick={logout}>
@@ -149,7 +149,7 @@ export default function AdminPage() {
             aria-label={option.label}
             className="grid gap-4 rounded-lg border border-border p-4"
           >
-            <h2 className="font-medium text-foreground">{option.label}</h2>
+            <h2 className="text-lg text-foreground">{option.label}</h2>
 
             <div className="grid gap-2">
               <Label htmlFor={`${idPrefix}-periodo`}>Período</Label>

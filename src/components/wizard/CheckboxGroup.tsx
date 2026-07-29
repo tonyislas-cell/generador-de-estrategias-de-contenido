@@ -1,6 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import type { Option } from "@/lib/wizard/types";
+import { OptionCard } from "./OptionCard";
 
 interface CheckboxGroupProps<T extends string> {
   name: string;
@@ -29,28 +29,21 @@ export function CheckboxGroup<T extends string>({
         const id = `${name}-${option.value}`;
         const checked = current.includes(option.value);
         return (
-          <div
+          <OptionCard
             key={option.value}
-            className="flex items-start gap-2 rounded-lg border border-border p-3"
-          >
-            <Checkbox
-              id={id}
-              checked={checked}
-              onCheckedChange={(value) => toggle(option.value, value === true)}
-              className="mt-0.5"
-            />
-            <Label
-              htmlFor={id}
-              className="flex cursor-pointer flex-col gap-1 font-normal"
-            >
-              <span className="font-medium text-foreground">{option.label}</span>
-              {option.description ? (
-                <span className="text-sm text-muted-foreground">
-                  {option.description}
-                </span>
-              ) : null}
-            </Label>
-          </div>
+            htmlFor={id}
+            checked={checked}
+            label={option.label}
+            description={option.description}
+            control={
+              <Checkbox
+                id={id}
+                checked={checked}
+                onCheckedChange={(value) => toggle(option.value, value === true)}
+                className="mt-0.5"
+              />
+            }
+          />
         );
       })}
     </div>

@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="mx-auto grid w-full max-w-xl flex-1 content-start gap-6 px-6 py-12">
-      <h1 className="text-xl font-semibold text-foreground">Panel de admin</h1>
+      <h1 className="text-2xl text-foreground">Panel de admin</h1>
       <form onSubmit={handleSubmit} className="grid gap-4">
         <div className="grid gap-2">
           <Label htmlFor="password">Contraseña</Label>
