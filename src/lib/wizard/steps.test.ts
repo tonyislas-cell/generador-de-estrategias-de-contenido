@@ -81,3 +81,33 @@ describe("contexto step's isAnswered", () => {
     ).toBe(true);
   });
 });
+
+describe("recursos step's isAnswered", () => {
+  const recursosStep = getVisibleSteps({}).find((s) => s.id === "recursos")!;
+  const complete: WizardAnswers = {
+    equipo: ["solo"],
+    tiempoPorPieza: "30_60min",
+    frecuencia: "semanal",
+  };
+
+  it("is answered with a single equipo selected", () => {
+    expect(recursosStep.isAnswered(complete)).toBe(true);
+  });
+
+  it("is also answered with more than one equipo selected", () => {
+    expect(
+      recursosStep.isAnswered({ ...complete, equipo: ["solo", "con_editor"] })
+    ).toBe(true);
+  });
+
+  it("is not answered when equipo is an empty array", () => {
+    expect(recursosStep.isAnswered({ ...complete, equipo: [] })).toBe(false);
+  });
+
+  it("is not answered when equipo was never set", () => {
+    const withoutEquipo = { ...complete };
+    delete withoutEquipo.equipo;
+
+    expect(recursosStep.isAnswered(withoutEquipo)).toBe(false);
+  });
+});

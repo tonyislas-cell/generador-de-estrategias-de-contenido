@@ -91,7 +91,8 @@ function capacidadDeProduccion(ctx: PromptContext): string {
     "## Capacidad de producción",
     `- **Frecuencia:** ${ctx.frecuenciaLabel} — ${ctx.piezasPorSemanaLabel} por semana, ni una más.`,
     `- **Tiempo por pieza:** ${ctx.tiempoDescriptor}`,
-    `- **Equipo:** ${ctx.equipoDescriptor}`,
+    "- **Equipo disponible:**",
+    bullets(ctx.equipos.map((e) => `${e.label}: ${e.descriptor}`)),
     agrupado,
   ]);
 }
@@ -233,11 +234,15 @@ function buildSetup(ctx: PromptContext): string {
 // --------------------------------------------------------- bloque semanal
 
 function restriccionesDuras(ctx: PromptContext, mision: MisionSemana): string {
+  const equipoListado = ctx.equipos
+    .map((e) => `«${e.label.toLowerCase()}»`)
+    .join(" o ");
+
   return [
     "## Restricciones duras",
     bullets([
       `Exactamente ${ctx.piezasPorSemanaLabel}. Ni una más, ni una menos.`,
-      `Formato: ${ctx.formatoLabel}. Nada que necesite más de «${ctx.tiempoPorPiezaLabel.toLowerCase()}» por pieza, ni más equipo que «${ctx.equipoLabel.toLowerCase()}».`,
+      `Formato: ${ctx.formatoLabel}. Nada que necesite más de «${ctx.tiempoPorPiezaLabel.toLowerCase()}» por pieza. Cada pieza usa el equipo que mejor le sirva, sin superar ninguno de estos niveles: ${equipoListado}.`,
       mision.reglaCTA,
       `Prueba del reemplazo: si cambias «${ctx.answers.nicho}» por otro rubro y el guion sigue funcionando, está mal.`,
       `Sigue prohibido lo que está quemado en ${ctx.plataformaPrincipalLabel}: ${ctx.trends.evitar.join("; ")}.`,
@@ -368,6 +373,9 @@ function controlDeCalidad(ctx: PromptContext): string {
     ctx.answers.objetivo === "autoridad"
       ? "¿Alguna pieza termina vendiendo algo? Reescríbela."
       : null;
+  const equipoListado = ctx.equipos
+    .map((e) => `«${e.label.toLowerCase()}»`)
+    .join(" o ");
 
   return lines([
     "## Antes de responder, verifica",
@@ -377,7 +385,7 @@ function controlDeCalidad(ctx: PromptContext): string {
         "¿Alguna arranca presentando la pieza, o con una fórmula prohibida? Reescríbela.",
         "¿Dos ganchos empiezan con la misma estructura sintáctica? Cambia uno.",
         "¿Alguna pieza pasa la prueba del reemplazo, es decir, podría ser de cualquier otro nicho? Reescríbela.",
-        `¿Alguna necesita más de «${ctx.tiempoPorPiezaLabel.toLowerCase()}» o más equipo que «${ctx.equipoLabel.toLowerCase()}»? Simplifícala.`,
+        `¿Alguna pieza necesita más de «${ctx.tiempoPorPiezaLabel.toLowerCase()}» por pieza, o más equipo del disponible (${equipoListado})? Simplifícala.`,
         "¿Inventaste algún dato, cifra o testimonio? Cámbialo por [DATO A COMPLETAR: …].",
         "¿Usaste alguno de los tres clichés que tú mismo te prohibiste al principio?",
         noVender,

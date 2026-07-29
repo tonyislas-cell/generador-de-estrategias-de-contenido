@@ -19,7 +19,7 @@ interface KitAnswersBase {
   /** `null` cuando la persona no completó el campo — es opcional, a diferencia del resto. */
   contextoMarca: string | null;
   formato: Formato;
-  equipo: Equipo;
+  equipo: [Equipo, ...Equipo[]];
   tiempoPorPieza: TiempoPorPieza;
   frecuencia: Frecuencia;
   estilosGancho: [EstiloGancho, ...EstiloGancho[]];
@@ -66,11 +66,11 @@ export function toKitAnswers(answers: WizardAnswers): KitAnswers | null {
   const audiencia = trimmed(answers.audiencia);
   const plataformas = asNonEmpty(answers.plataformas);
   const estilosGancho = asNonEmpty(answers.estilosGancho);
-  const { tono, etapaCuenta, formato, equipo, tiempoPorPieza, frecuencia, objetivo } =
-    answers;
+  const equipo = asNonEmpty(answers.equipo);
+  const { tono, etapaCuenta, formato, tiempoPorPieza, frecuencia, objetivo } = answers;
 
-  if (!nicho || !audiencia || !plataformas || !estilosGancho) return null;
-  if (!tono || !etapaCuenta || !formato || !equipo || !tiempoPorPieza || !frecuencia) {
+  if (!nicho || !audiencia || !plataformas || !estilosGancho || !equipo) return null;
+  if (!tono || !etapaCuenta || !formato || !tiempoPorPieza || !frecuencia) {
     return null;
   }
   if (!objetivo) return null;

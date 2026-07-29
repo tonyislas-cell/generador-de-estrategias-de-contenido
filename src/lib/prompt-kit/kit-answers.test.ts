@@ -10,7 +10,7 @@ const completeAutoridad: WizardAnswers = {
   etapaCuenta: "establecida",
   objetivo: "autoridad",
   formato: "camara",
-  equipo: "solo",
+  equipo: ["solo"],
   tiempoPorPieza: "30_60min",
   frecuencia: "semanal",
   estilosGancho: ["curiosidad"],
@@ -83,9 +83,19 @@ describe("toKitAnswers", () => {
     expect(toKitAnswers({ ...completeAutoridad, nicho: "   " })).toBeNull();
   });
 
-  it("returns null when the platform or hook selections are empty arrays", () => {
+  it("returns null when the platform, hook, or equipo selections are empty arrays", () => {
     expect(toKitAnswers({ ...completeAutoridad, plataformas: [] })).toBeNull();
     expect(toKitAnswers({ ...completeAutoridad, estilosGancho: [] })).toBeNull();
+    expect(toKitAnswers({ ...completeAutoridad, equipo: [] })).toBeNull();
+  });
+
+  it("accepts more than one equipo level", () => {
+    const result = toKitAnswers({
+      ...completeAutoridad,
+      equipo: ["solo", "con_editor"],
+    });
+
+    expect(result?.equipo).toEqual(["solo", "con_editor"]);
   });
 
   it("drops leftover oferta answers on the autoridad path", () => {

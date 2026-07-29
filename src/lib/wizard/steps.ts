@@ -35,7 +35,7 @@ const STEP_DEFINITIONS: StepDefinition[] = [
     id: "recursos",
     title: "Recursos y restricciones",
     isAnswered: (a) =>
-      Boolean(a.equipo) && Boolean(a.tiempoPorPieza) && Boolean(a.frecuencia),
+      hasItems(a.equipo) && Boolean(a.tiempoPorPieza) && Boolean(a.frecuencia),
   },
   {
     id: "gancho",

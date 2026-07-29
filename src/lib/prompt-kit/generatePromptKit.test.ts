@@ -13,7 +13,7 @@ const BASE: WizardAnswers = {
   etapaCuenta: "establecida",
   objetivo: "autoridad",
   formato: "camara",
-  equipo: "solo",
+  equipo: ["solo"],
   tiempoPorPieza: "30_60min",
   frecuencia: "dos_tres_semana",
   estilosGancho: ["curiosidad"],
@@ -137,6 +137,29 @@ describe("generatePromptKit", () => {
     expect(nueva.setup.contenido).not.toContain("ya tiene audiencia");
 
     expect(nueva.semanas).toEqual(establecida.semanas);
+  });
+
+  it("describes every selected equipo level in the setup, and none of the others", () => {
+    const kit = buildKit({ equipo: ["solo", "con_editor"] });
+
+    expect(kit.setup.contenido).toContain("se graba, edita y publica sin ayuda");
+    expect(kit.setup.contenido).toContain("hay alguien que edita");
+    expect(kit.setup.contenido).not.toContain("equipo de grabación");
+  });
+
+  it("lists every selected equipo level, not just one, in the weekly hard constraints", () => {
+    const kit = buildKit({ equipo: ["solo", "con_editor"] });
+    const semana1 = kit.semanas[0]?.contenido ?? "";
+
+    expect(semana1).toContain("solo yo");
+    expect(semana1).toContain("con editor");
+  });
+
+  it("still works with a single equipo level, same as before", () => {
+    const kit = buildKit({ equipo: ["solo"] });
+
+    expect(kit.setup.contenido).toContain("se graba, edita y publica sin ayuda");
+    expect(kit.setup.contenido).not.toContain("hay alguien que edita");
   });
 
   it("inserts the trends snippet for the chosen platform into the setup prompt", () => {

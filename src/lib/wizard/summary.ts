@@ -51,8 +51,11 @@ export function getSummaryItems(answers: WizardAnswers): SummaryItem[] {
   if (answers.formato) {
     items.push({ label: "Formato", value: formatoLabel(answers.formato) });
   }
-  if (answers.equipo) {
-    items.push({ label: "Equipo disponible", value: equipoLabel(answers.equipo) });
+  if (answers.equipo?.length) {
+    items.push({
+      label: "Equipo disponible",
+      value: answers.equipo.map(equipoLabel).join(", "),
+    });
   }
   if (answers.tiempoPorPieza) {
     items.push({

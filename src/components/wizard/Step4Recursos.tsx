@@ -1,4 +1,5 @@
 import { Label } from "@/components/ui/label";
+import { CheckboxGroup } from "./CheckboxGroup";
 import { ChoiceCardGroup } from "./ChoiceCardGroup";
 import {
   EQUIPO_OPTIONS,
@@ -12,10 +13,13 @@ export function Step4Recursos({ answers, onChange }: StepProps) {
     <div className="grid gap-6">
       <div className="grid gap-2">
         <Label>Equipo disponible</Label>
-        <ChoiceCardGroup
+        <p className="text-sm text-muted-foreground">
+          Puedes elegir más de uno si tu forma de trabajar varía.
+        </p>
+        <CheckboxGroup
           name="equipo"
           options={EQUIPO_OPTIONS}
-          value={answers.equipo}
+          selected={answers.equipo}
           onChange={(equipo) => onChange({ equipo })}
         />
       </div>

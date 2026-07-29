@@ -41,8 +41,8 @@ export interface PromptContext {
   etapaCuentaDescriptor: string;
   formatoLabel: string;
   formatoDescriptor: string;
-  equipoLabel: string;
-  equipoDescriptor: string;
+  /** Uno o más — quien trabaja distinto según la semana los declara todos. */
+  equipos: { label: string; descriptor: string }[];
   tiempoPorPiezaLabel: string;
   tiempoDescriptor: string;
   frecuenciaLabel: string;
@@ -88,8 +88,10 @@ export function buildContext(
     etapaCuentaDescriptor: ETAPA_CUENTA_DESCRIPTOR[answers.etapaCuenta],
     formatoLabel: labels.formatoLabel(answers.formato),
     formatoDescriptor: FORMATO_DESCRIPTOR[answers.formato],
-    equipoLabel: labels.equipoLabel(answers.equipo),
-    equipoDescriptor: EQUIPO_DESCRIPTOR[answers.equipo],
+    equipos: answers.equipo.map((equipo) => ({
+      label: labels.equipoLabel(equipo),
+      descriptor: EQUIPO_DESCRIPTOR[equipo],
+    })),
     tiempoPorPiezaLabel: labels.tiempoPorPiezaLabel(answers.tiempoPorPieza),
     tiempoDescriptor: TIEMPO_POR_PIEZA_DESCRIPTOR[answers.tiempoPorPieza],
     frecuenciaLabel: labels.frecuenciaLabel(answers.frecuencia),

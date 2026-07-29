@@ -53,7 +53,8 @@ export interface WizardAnswers {
   formato?: Formato;
 
   // Capa 4 — Recursos y restricciones
-  equipo?: Equipo;
+  /** Puede elegir más de uno: quien a veces trabaja sola y a veces con editor los declara todos. */
+  equipo?: Equipo[];
   tiempoPorPieza?: TiempoPorPieza;
   frecuencia?: Frecuencia;
 

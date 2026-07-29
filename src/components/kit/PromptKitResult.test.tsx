@@ -24,7 +24,7 @@ const COMPLETE: WizardAnswers = {
   etapaCuenta: "establecida",
   objetivo: "autoridad",
   formato: "camara",
-  equipo: "solo",
+  equipo: ["solo"],
   tiempoPorPieza: "30_60min",
   frecuencia: "semanal",
   estilosGancho: ["curiosidad"],
