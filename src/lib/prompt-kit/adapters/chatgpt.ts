@@ -2,6 +2,7 @@ import type { PromptContext } from "../context";
 import type { MisionSemana } from "../misiones";
 import { bullets, lines, present, sections } from "./prose";
 import type { PromptAdapter } from "./types";
+import type { Formato } from "@/lib/wizard/types";
 
 /**
  * Adaptador de ChatGPT.
@@ -54,7 +55,8 @@ function contextoDelCreador(ctx: PromptContext): string {
     `- **Tono de marca:** ${ctx.tonoLabel} — ${ctx.tonoDescriptor}`,
     `- **Etapa de la cuenta:** ${ctx.etapaCuentaLabel} — ${ctx.etapaCuentaDescriptor}`,
     contextoMarca,
-    `- **Formato de producción:** ${ctx.formatoLabel} — ${ctx.formatoDescriptor}`,
+    "- **Formato de producción:**",
+    bullets(ctx.formatos.map((f) => `${f.label}: ${f.descriptor}`)),
     "- **Estilos de gancho que resuenan:**",
     bullets(ctx.ganchos.map((g) => `${g.label}: ${g.mecanica}`)),
   ]);
@@ -237,12 +239,16 @@ function restriccionesDuras(ctx: PromptContext, mision: MisionSemana): string {
   const equipoListado = ctx.equipos
     .map((e) => `«${e.label.toLowerCase()}»`)
     .join(" o ");
+  const formatoLinea =
+    ctx.formatos.length === 1
+      ? `Formato: ${ctx.formatos[0].label}.`
+      : `Formato: cada pieza usa el que mejor le sirva entre estos, con la estructura que le corresponde: ${ctx.formatos.map((f) => `«${f.label.toLowerCase()}»`).join(" o ")}.`;
 
   return [
     "## Restricciones duras",
     bullets([
       `Exactamente ${ctx.piezasPorSemanaLabel}. Ni una más, ni una menos.`,
-      `Formato: ${ctx.formatoLabel}. Nada que necesite más de «${ctx.tiempoPorPiezaLabel.toLowerCase()}» por pieza. Cada pieza usa el equipo que mejor le sirva, sin superar ninguno de estos niveles: ${equipoListado}.`,
+      `${formatoLinea} Nada que necesite más de «${ctx.tiempoPorPiezaLabel.toLowerCase()}» por pieza. Cada pieza usa el equipo que mejor le sirva, sin superar ninguno de estos niveles: ${equipoListado}.`,
       mision.reglaCTA,
       `Prueba del reemplazo: si cambias «${ctx.answers.nicho}» por otro rubro y el guion sigue funcionando, está mal.`,
       `Sigue prohibido lo que está quemado en ${ctx.plataformaPrincipalLabel}: ${ctx.trends.evitar.join("; ")}.`,
@@ -272,9 +278,9 @@ function antesDeEscribir(ctx: PromptContext): string {
   ].join("\n");
 }
 
-/** El esqueleto de cada pieza es la rama donde más se nota el formato elegido. */
-function esqueletoDePieza(ctx: PromptContext): string {
-  if (ctx.answers.formato === "texto_carrusel") {
+/** El esqueleto de una pieza en un formato dado — la rama donde más se nota el formato elegido. */
+function esqueletoParaFormato(formato: Formato): string {
+  if (formato === "texto_carrusel") {
     return [
       "### Pieza {n} — {título interno corto}",
       "- **Publicar:** {día}",
@@ -290,7 +296,7 @@ function esqueletoDePieza(ctx: PromptContext): string {
     ].join("\n");
   }
 
-  if (ctx.answers.formato === "faceless") {
+  if (formato === "faceless") {
     return [
       "### Pieza {n} — {título interno corto}",
       "- **Publicar:** {día}",
@@ -321,6 +327,29 @@ function esqueletoDePieza(ctx: PromptContext): string {
     "- **Texto de la publicación:** según las convenciones de texto de arriba.",
     "- **Por qué funciona:** una línea, honesta.",
   ].join("\n");
+}
+
+/** Inserta la línea **Formato:** justo después del título, para que el esqueleto muestre dónde va el campo que la instrucción de arriba pide. */
+function declararFormatoEnEsqueleto(esqueleto: string, etiqueta: string): string {
+  const [titulo, ...resto] = esqueleto.split("\n");
+  return [titulo, `- **Formato:** ${etiqueta}`, ...resto].join("\n");
+}
+
+/** Con un solo formato, el esqueleto de siempre. Con más de uno, cada pieza declara cuál usa. */
+function esqueletoDePieza(ctx: PromptContext): string {
+  if (ctx.formatos.length === 1) {
+    return esqueletoParaFormato(ctx.formatos[0].value);
+  }
+
+  return lines([
+    `Elegiste más de un formato de producción. Cada pieza declara con cuál se hizo, con la línea **Formato:** al principio, y sigue exactamente la estructura de esa sección — no mezcles campos de un formato con otro. Repártelas entre los formatos elegidos según lo que mejor sirva a cada idea; no hace falta usar todos cada semana.`,
+    "",
+    ...ctx.formatos.flatMap((f, i) => [
+      i === 0 ? null : "",
+      `**Si la pieza es ${f.label}:**`,
+      declararFormatoEnEsqueleto(esqueletoParaFormato(f.value), f.label),
+    ]),
+  ]);
 }
 
 function formatoDeSalida(
@@ -354,7 +383,7 @@ function formatoDeSalida(
     "**Qué mirar esta semana:** elige cuál de estas señales te dice si la semana funcionó, y con qué número te das por satisfecho:",
     bullets(ctx.trends.senales),
     "",
-    `Después, las ${ctx.piezasPorSemanaLabel}, cada una con esta estructura exacta:`,
+    `Después, las ${ctx.piezasPorSemanaLabel}, cada una con ${ctx.formatos.length === 1 ? "esta estructura exacta" : "la estructura que le corresponda según su formato"}:`,
     "",
     esqueletoDePieza(ctx),
     adaptacion,
@@ -376,6 +405,10 @@ function controlDeCalidad(ctx: PromptContext): string {
   const equipoListado = ctx.equipos
     .map((e) => `«${e.label.toLowerCase()}»`)
     .join(" o ");
+  const estructuraMezclada =
+    ctx.formatos.length > 1
+      ? "¿Alguna pieza mezcla campos de dos formatos distintos? Corrígela para que use solo la estructura del formato que declaró."
+      : null;
 
   return lines([
     "## Antes de responder, verifica",
@@ -386,6 +419,7 @@ function controlDeCalidad(ctx: PromptContext): string {
         "¿Dos ganchos empiezan con la misma estructura sintáctica? Cambia uno.",
         "¿Alguna pieza pasa la prueba del reemplazo, es decir, podría ser de cualquier otro nicho? Reescríbela.",
         `¿Alguna pieza necesita más de «${ctx.tiempoPorPiezaLabel.toLowerCase()}» por pieza, o más equipo del disponible (${equipoListado})? Simplifícala.`,
+        estructuraMezclada,
         "¿Inventaste algún dato, cifra o testimonio? Cámbialo por [DATO A COMPLETAR: …].",
         "¿Usaste alguno de los tres clichés que tú mismo te prohibiste al principio?",
         noVender,

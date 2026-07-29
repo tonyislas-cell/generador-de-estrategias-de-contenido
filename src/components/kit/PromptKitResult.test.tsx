@@ -23,7 +23,7 @@ const COMPLETE: WizardAnswers = {
   tono: "cercano",
   etapaCuenta: "establecida",
   objetivo: "autoridad",
-  formato: "camara",
+  formato: ["camara"],
   equipo: ["solo"],
   tiempoPorPieza: "30_60min",
   frecuencia: "semanal",

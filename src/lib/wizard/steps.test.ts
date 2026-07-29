@@ -82,6 +82,28 @@ describe("contexto step's isAnswered", () => {
   });
 });
 
+describe("formato step's isAnswered", () => {
+  const formatoStep = getVisibleSteps({}).find((s) => s.id === "formato")!;
+
+  it("is answered with a single formato selected", () => {
+    expect(formatoStep.isAnswered({ formato: ["camara"] })).toBe(true);
+  });
+
+  it("is also answered with more than one formato selected", () => {
+    expect(
+      formatoStep.isAnswered({ formato: ["camara", "faceless"] })
+    ).toBe(true);
+  });
+
+  it("is not answered when formato is an empty array", () => {
+    expect(formatoStep.isAnswered({ formato: [] })).toBe(false);
+  });
+
+  it("is not answered when formato was never set", () => {
+    expect(formatoStep.isAnswered({})).toBe(false);
+  });
+});
+
 describe("recursos step's isAnswered", () => {
   const recursosStep = getVisibleSteps({}).find((s) => s.id === "recursos")!;
   const complete: WizardAnswers = {

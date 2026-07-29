@@ -9,7 +9,7 @@ const completeAutoridad: WizardAnswers = {
   tono: "cercano",
   etapaCuenta: "establecida",
   objetivo: "autoridad",
-  formato: "camara",
+  formato: ["camara"],
   equipo: ["solo"],
   tiempoPorPieza: "30_60min",
   frecuencia: "semanal",
@@ -83,8 +83,9 @@ describe("toKitAnswers", () => {
     expect(toKitAnswers({ ...completeAutoridad, nicho: "   " })).toBeNull();
   });
 
-  it("returns null when the platform, hook, or equipo selections are empty arrays", () => {
+  it("returns null when the platform, formato, hook, or equipo selections are empty arrays", () => {
     expect(toKitAnswers({ ...completeAutoridad, plataformas: [] })).toBeNull();
+    expect(toKitAnswers({ ...completeAutoridad, formato: [] })).toBeNull();
     expect(toKitAnswers({ ...completeAutoridad, estilosGancho: [] })).toBeNull();
     expect(toKitAnswers({ ...completeAutoridad, equipo: [] })).toBeNull();
   });
@@ -96,6 +97,15 @@ describe("toKitAnswers", () => {
     });
 
     expect(result?.equipo).toEqual(["solo", "con_editor"]);
+  });
+
+  it("accepts more than one formato", () => {
+    const result = toKitAnswers({
+      ...completeAutoridad,
+      formato: ["camara", "texto_carrusel"],
+    });
+
+    expect(result?.formato).toEqual(["camara", "texto_carrusel"]);
   });
 
   it("drops leftover oferta answers on the autoridad path", () => {

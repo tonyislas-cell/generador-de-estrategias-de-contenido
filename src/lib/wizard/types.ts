@@ -50,7 +50,8 @@ export interface WizardAnswers {
   objetivo?: Objetivo;
 
   // Capa 3 — Formato
-  formato?: Formato;
+  /** Puede elegir más de uno: quien combina cámara y carrusel, por ejemplo, los declara todos. */
+  formato?: Formato[];
 
   // Capa 4 — Recursos y restricciones
   /** Puede elegir más de uno: quien a veces trabaja sola y a veces con editor los declara todos. */

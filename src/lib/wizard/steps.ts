@@ -29,7 +29,7 @@ const STEP_DEFINITIONS: StepDefinition[] = [
   {
     id: "formato",
     title: "Formato",
-    isAnswered: (a) => Boolean(a.formato),
+    isAnswered: (a) => hasItems(a.formato),
   },
   {
     id: "recursos",

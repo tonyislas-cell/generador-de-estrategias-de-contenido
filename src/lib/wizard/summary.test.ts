@@ -22,6 +22,13 @@ describe("getSummaryItems", () => {
     expect(byLabel["Objetivo"]).toBe("Autoridad y consistencia de marca");
   });
 
+  it("joins multiple selected formatos with a comma, same as plataformas", () => {
+    const items = getSummaryItems({ formato: ["camara", "texto_carrusel"] });
+    const byLabel = Object.fromEntries(items.map((i) => [i.label, i.value]));
+
+    expect(byLabel["Formato"]).toBe("Cámara, Texto / carrusel");
+  });
+
   it("omits unanswered fields", () => {
     const items = getSummaryItems({ nicho: "Finanzas personales" });
 

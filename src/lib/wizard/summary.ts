@@ -48,8 +48,11 @@ export function getSummaryItems(answers: WizardAnswers): SummaryItem[] {
   if (answers.objetivo) {
     items.push({ label: "Objetivo", value: objetivoLabel(answers.objetivo) });
   }
-  if (answers.formato) {
-    items.push({ label: "Formato", value: formatoLabel(answers.formato) });
+  if (answers.formato?.length) {
+    items.push({
+      label: "Formato",
+      value: answers.formato.map(formatoLabel).join(", "),
+    });
   }
   if (answers.equipo?.length) {
     items.push({

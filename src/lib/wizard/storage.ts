@@ -30,6 +30,24 @@ function isStoredWizardState(value: unknown): value is StoredWizardState {
   );
 }
 
+/**
+ * `formato` y `equipo` eran de valor único antes de volverse multi-selección.
+ * Sin esto, un estado guardado con el string viejo (p. ej. `formato: "camara"`)
+ * se recorre carácter por carácter al iterarlo como array en vez de fallar
+ * limpio — envolverlo en un array de un elemento conserva el progreso
+ * guardado sin corromper la salida del kit.
+ */
+function normalizeLegacyArrayFields(answers: WizardAnswers): WizardAnswers {
+  const raw = answers as Record<string, unknown>;
+  const asArray = (value: unknown) => (typeof value === "string" ? [value] : value);
+
+  return {
+    ...answers,
+    formato: asArray(raw.formato) as WizardAnswers["formato"],
+    equipo: asArray(raw.equipo) as WizardAnswers["equipo"],
+  };
+}
+
 export function loadWizardState(): StoredWizardState | null {
   if (typeof window === "undefined") return null;
 
@@ -38,7 +56,8 @@ export function loadWizardState(): StoredWizardState | null {
 
   try {
     const parsed: unknown = JSON.parse(raw);
-    return isStoredWizardState(parsed) ? parsed : null;
+    if (!isStoredWizardState(parsed)) return null;
+    return { ...parsed, answers: normalizeLegacyArrayFields(parsed.answers) };
   } catch {
     return null;
   }

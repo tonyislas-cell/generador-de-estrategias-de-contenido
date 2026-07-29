@@ -44,6 +44,49 @@ describe("wizard storage", () => {
     expect(loadWizardState()?.modelos).toBeUndefined();
   });
 
+  it("wraps a legacy scalar formato in an array instead of leaving it a string", () => {
+    window.localStorage.setItem(
+      "viral-content-kit:wizard:v1",
+      JSON.stringify({ answers: { formato: "camara" }, currentStepId: "recursos" })
+    );
+
+    expect(loadWizardState()?.answers.formato).toEqual(["camara"]);
+  });
+
+  it("wraps a legacy scalar equipo in an array instead of leaving it a string", () => {
+    window.localStorage.setItem(
+      "viral-content-kit:wizard:v1",
+      JSON.stringify({ answers: { equipo: "solo" }, currentStepId: "recursos" })
+    );
+
+    expect(loadWizardState()?.answers.equipo).toEqual(["solo"]);
+  });
+
+  it("leaves formato and equipo untouched when they're already arrays", () => {
+    window.localStorage.setItem(
+      "viral-content-kit:wizard:v1",
+      JSON.stringify({
+        answers: { formato: ["camara", "faceless"], equipo: ["solo"] },
+        currentStepId: "recursos",
+      })
+    );
+
+    const answers = loadWizardState()?.answers;
+    expect(answers?.formato).toEqual(["camara", "faceless"]);
+    expect(answers?.equipo).toEqual(["solo"]);
+  });
+
+  it("leaves formato and equipo undefined when they were never answered", () => {
+    window.localStorage.setItem(
+      "viral-content-kit:wizard:v1",
+      JSON.stringify({ answers: {}, currentStepId: "contexto" })
+    );
+
+    const answers = loadWizardState()?.answers;
+    expect(answers?.formato).toBeUndefined();
+    expect(answers?.equipo).toBeUndefined();
+  });
+
   it("returns null and doesn't throw when the stored value is corrupt JSON", () => {
     window.localStorage.setItem("viral-content-kit:wizard:v1", "{not json");
 

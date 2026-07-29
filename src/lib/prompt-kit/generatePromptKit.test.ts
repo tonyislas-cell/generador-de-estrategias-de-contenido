@@ -12,7 +12,7 @@ const BASE: WizardAnswers = {
   tono: "cercano",
   etapaCuenta: "establecida",
   objetivo: "autoridad",
-  formato: "camara",
+  formato: ["camara"],
   equipo: ["solo"],
   tiempoPorPieza: "30_60min",
   frecuencia: "dos_tres_semana",
@@ -193,10 +193,10 @@ describe("generatePromptKit", () => {
     expect(kit.setup.contenido).toContain("para y espera");
   });
 
-  it("asks for camera direction only when the formato is camara", () => {
-    const camara = buildKit({ formato: "camara" });
-    const faceless = buildKit({ formato: "faceless" });
-    const carrusel = buildKit({ formato: "texto_carrusel" });
+  it("still works with a single formato, same as before", () => {
+    const camara = buildKit({ formato: ["camara"] });
+    const faceless = buildKit({ formato: ["faceless"] });
+    const carrusel = buildKit({ formato: ["texto_carrusel"] });
 
     expect(textoCompleto(camara)).toContain("Dirección de cámara");
 
@@ -206,6 +206,50 @@ describe("generatePromptKit", () => {
     expect(textoCompleto(carrusel)).toContain("Lámina 1");
     expect(textoCompleto(carrusel)).not.toContain("Dirección de cámara");
     expect(textoCompleto(carrusel)).toContain("no hay video");
+  });
+
+  it("describes every selected formato in the setup, and none of the others", () => {
+    const kit = buildKit({ formato: ["camara", "texto_carrusel"] });
+
+    expect(kit.setup.contenido).toContain("se graba a cámara mostrando la cara");
+    expect(kit.setup.contenido).toContain("no hay guion hablado");
+    expect(kit.setup.contenido).not.toContain("voz en off sobre imágenes");
+  });
+
+  it("gives every selected formato its own piece skeleton in the weekly block", () => {
+    const kit = buildKit({ formato: ["camara", "texto_carrusel"] });
+    const semana1 = kit.semanas[0]?.contenido ?? "";
+
+    expect(semana1).toContain("Dirección de cámara");
+    expect(semana1).toContain("Lámina 1");
+  });
+
+  it("shows every piece skeleton labeled with the formato it belongs to, only when there's more than one", () => {
+    const single = buildKit({ formato: ["camara"] });
+    const multi = buildKit({ formato: ["camara", "texto_carrusel"] });
+
+    // `**Formato:**` (bold) is the skeleton's own field, distinct from the
+    // plain "Formato: Cámara." that restriccionesDuras always includes.
+    expect(textoCompleto(single)).not.toContain("**Formato:**");
+    expect((multi.semanas[0]?.contenido ?? "")).toContain("**Formato:** Cámara");
+    expect((multi.semanas[0]?.contenido ?? "")).toContain(
+      "**Formato:** Texto / carrusel"
+    );
+  });
+
+  it("only relaxes the formato hard-constraint line, and only adds the mixed-structure quality check, when more than one formato is selected", () => {
+    const single = buildKit({ formato: ["camara"] });
+    const multi = buildKit({ formato: ["camara", "texto_carrusel"] });
+    const semana1Single = single.semanas[0]?.contenido ?? "";
+    const semana1Multi = multi.semanas[0]?.contenido ?? "";
+
+    expect(semana1Single).toContain("Formato: Cámara.");
+    expect(semana1Single).not.toContain("mezcla campos");
+
+    expect(semana1Multi).toContain(
+      "cada pieza usa el que mejor le sirva entre estos"
+    );
+    expect(semana1Multi).toContain("mezcla campos de dos formatos distintos");
   });
 
   it("injects the oferta, objeciones and prueba social on the lanzamiento path", () => {

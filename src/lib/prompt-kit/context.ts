@@ -1,4 +1,4 @@
-import type { Plataforma } from "@/lib/wizard/types";
+import type { Formato, Plataforma } from "@/lib/wizard/types";
 import type { TrendsSnippet } from "@/lib/trends/types";
 import * as labels from "@/lib/wizard/labels";
 import {
@@ -39,8 +39,8 @@ export interface PromptContext {
   tonoDescriptor: string;
   etapaCuentaLabel: string;
   etapaCuentaDescriptor: string;
-  formatoLabel: string;
-  formatoDescriptor: string;
+  /** Uno o más — quien combina formatos (p. ej. cámara y carrusel) los declara todos. */
+  formatos: { value: Formato; label: string; descriptor: string }[];
   /** Uno o más — quien trabaja distinto según la semana los declara todos. */
   equipos: { label: string; descriptor: string }[];
   tiempoPorPiezaLabel: string;
@@ -86,8 +86,11 @@ export function buildContext(
     tonoDescriptor: TONO_DESCRIPTOR[answers.tono],
     etapaCuentaLabel: labels.etapaCuentaLabel(answers.etapaCuenta),
     etapaCuentaDescriptor: ETAPA_CUENTA_DESCRIPTOR[answers.etapaCuenta],
-    formatoLabel: labels.formatoLabel(answers.formato),
-    formatoDescriptor: FORMATO_DESCRIPTOR[answers.formato],
+    formatos: answers.formato.map((formato) => ({
+      value: formato,
+      label: labels.formatoLabel(formato),
+      descriptor: FORMATO_DESCRIPTOR[formato],
+    })),
     equipos: answers.equipo.map((equipo) => ({
       label: labels.equipoLabel(equipo),
       descriptor: EQUIPO_DESCRIPTOR[equipo],

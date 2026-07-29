@@ -18,7 +18,7 @@ interface KitAnswersBase {
   etapaCuenta: EtapaCuenta;
   /** `null` cuando la persona no completó el campo — es opcional, a diferencia del resto. */
   contextoMarca: string | null;
-  formato: Formato;
+  formato: [Formato, ...Formato[]];
   equipo: [Equipo, ...Equipo[]];
   tiempoPorPieza: TiempoPorPieza;
   frecuencia: Frecuencia;
@@ -67,10 +67,13 @@ export function toKitAnswers(answers: WizardAnswers): KitAnswers | null {
   const plataformas = asNonEmpty(answers.plataformas);
   const estilosGancho = asNonEmpty(answers.estilosGancho);
   const equipo = asNonEmpty(answers.equipo);
-  const { tono, etapaCuenta, formato, tiempoPorPieza, frecuencia, objetivo } = answers;
+  const formato = asNonEmpty(answers.formato);
+  const { tono, etapaCuenta, tiempoPorPieza, frecuencia, objetivo } = answers;
 
-  if (!nicho || !audiencia || !plataformas || !estilosGancho || !equipo) return null;
-  if (!tono || !etapaCuenta || !formato || !tiempoPorPieza || !frecuencia) {
+  if (!nicho || !audiencia || !plataformas || !estilosGancho || !equipo || !formato) {
+    return null;
+  }
+  if (!tono || !etapaCuenta || !tiempoPorPieza || !frecuencia) {
     return null;
   }
   if (!objetivo) return null;

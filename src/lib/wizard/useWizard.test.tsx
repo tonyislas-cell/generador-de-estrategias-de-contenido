@@ -69,12 +69,12 @@ describe("useWizard", () => {
 
     act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
     act(() => result.current.goNext()); // -> objetivo
-    act(() => result.current.updateAnswers({ formato: "camara" }));
+    act(() => result.current.updateAnswers({ formato: ["camara"] }));
     act(() => result.current.goNext()); // -> formato
 
     act(() => result.current.goBack()); // -> objetivo
     expect(result.current.currentStep?.id).toBe("objetivo");
-    expect(result.current.answers.formato).toBe("camara");
+    expect(result.current.answers.formato).toEqual(["camara"]);
   });
 
   it("goBack from summary returns to the last step", async () => {
