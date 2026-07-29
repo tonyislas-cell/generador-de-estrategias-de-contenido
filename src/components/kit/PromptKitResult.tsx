@@ -17,6 +17,7 @@ import {
 import { MODELO_OPTIONS, NOMBRE_DE_MODELO } from "@/lib/prompt-kit/adapters";
 import { plataformaLabel } from "@/lib/wizard/labels";
 import type { WizardAnswers } from "@/lib/wizard/types";
+import { DownloadKitButton } from "./DownloadKitButton";
 import { PromptBlockCard } from "./PromptBlockCard";
 
 type FetchState =
@@ -35,11 +36,14 @@ interface PromptKitResultProps {
 function KitPanel({ kit }: { kit: PromptKit }) {
   return (
     <div className="grid gap-6">
-      <p className="text-sm text-muted-foreground">
-        Abre {NOMBRE_DE_MODELO[kit.modelo]} en una conversación nueva y pega
-        los prompts en orden. No los pegues todos juntos: pega el primero,
-        espera la respuesta, y recién ahí el siguiente.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          Abre {NOMBRE_DE_MODELO[kit.modelo]} en una conversación nueva y pega
+          los prompts en orden. No los pegues todos juntos: pega el primero,
+          espera la respuesta, y recién ahí el siguiente.
+        </p>
+        <DownloadKitButton kit={kit} />
+      </div>
 
       <section className="grid gap-3" aria-label="Prompt de configuración">
         <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">

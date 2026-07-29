@@ -289,6 +289,31 @@ describe("PromptKitResult", () => {
       expect(screen.queryByRole("tab", { name: "Gemini" })).toBeNull();
     });
 
+    it("gives each tab its own download button, not one shared across tabs", async () => {
+      mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
+      render(
+        <PromptKitResult
+          answers={COMPLETE}
+          duracion="14_dias"
+          modelos={["claude", "chatgpt"]}
+          onBack={noop}
+          onRestart={noop}
+        />
+      );
+
+      await screen.findAllByRole("tab");
+      expect(
+        screen.getAllByRole("button", { name: /Descargar kit completo/ })
+      ).toHaveLength(1);
+
+      // Radix's TabsTrigger switches tabs on mousedown, not on click.
+      fireEvent.mouseDown(screen.getByRole("tab", { name: "ChatGPT" }));
+
+      expect(
+        await screen.findAllByRole("button", { name: /Descargar kit completo/ })
+      ).toHaveLength(1);
+    });
+
     it("orders tabs consistently regardless of selection order", async () => {
       mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
       render(
