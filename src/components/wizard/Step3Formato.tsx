@@ -1,5 +1,5 @@
 import { CheckboxGroup } from "./CheckboxGroup";
-import { FORMATO_OPTIONS } from "@/lib/wizard/options";
+import { opcionesDeFormato } from "@/lib/wizard/options";
 import type { StepProps } from "./step-props";
 
 export function Step3Formato({ answers, onChange }: StepProps) {
@@ -10,7 +10,7 @@ export function Step3Formato({ answers, onChange }: StepProps) {
       </p>
       <CheckboxGroup
         name="formato"
-        options={FORMATO_OPTIONS}
+        options={opcionesDeFormato(answers.tipoDeKit ?? "vertical")}
         selected={answers.formato}
         onChange={(formato) => onChange({ formato })}
       />

@@ -8,7 +8,7 @@ import { planDeBloques } from "./plan";
  */
 describe("planDeBloques", () => {
   it("opens with the setup and then one block per week, for a 14-day plan", () => {
-    expect(planDeBloques("14_dias")).toEqual([
+    expect(planDeBloques("vertical", "14_dias")).toEqual([
       { kind: "setup" },
       { kind: "semana", semana: 1 },
       { kind: "semana", semana: 2 },
@@ -16,7 +16,7 @@ describe("planDeBloques", () => {
   });
 
   it("stretches to four weeks for a one-month plan", () => {
-    expect(planDeBloques("1_mes")).toEqual([
+    expect(planDeBloques("vertical", "1_mes")).toEqual([
       { kind: "setup" },
       { kind: "semana", semana: 1 },
       { kind: "semana", semana: 2 },
@@ -28,7 +28,7 @@ describe("planDeBloques", () => {
   it("always starts with the setup", () => {
     // El invariante del que depende `generatePromptKit` para prometer una
     // tupla no vacía cuyo primer elemento es el setup.
-    expect(planDeBloques("14_dias")[0]).toEqual({ kind: "setup" });
-    expect(planDeBloques("1_mes")[0]).toEqual({ kind: "setup" });
+    expect(planDeBloques("vertical", "14_dias")[0]).toEqual({ kind: "setup" });
+    expect(planDeBloques("vertical", "1_mes")[0]).toEqual({ kind: "setup" });
   });
 });

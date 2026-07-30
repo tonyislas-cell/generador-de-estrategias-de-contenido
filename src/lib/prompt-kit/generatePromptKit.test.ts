@@ -53,6 +53,15 @@ const SNIPPET_BY_PLATAFORMA: Record<Plataforma, TrendsSnippet> = {
     evitar: ["Evitar shorts A"],
     convencionesCopy: "Convenciones de copy de shorts",
   },
+  youtube_largo: {
+    plataforma: "youtube_largo",
+    periodo: "línea base de prueba",
+    formatos: ["Formato largo A", "Formato largo B"],
+    ganchos: ["Gancho largo A"],
+    senales: ["Señal largo A"],
+    evitar: ["Evitar largo A"],
+    convencionesCopy: "Convenciones de copy de video largo",
+  },
   linkedin: {
     plataforma: "linkedin",
     periodo: "línea base de prueba",

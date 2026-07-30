@@ -9,6 +9,7 @@ import type {
   Option,
   Plataforma,
   TiempoPorPieza,
+  TipoDeKit,
   Tono,
 } from "./types";
 
@@ -16,8 +17,27 @@ export const PLATAFORMA_OPTIONS: Option<Plataforma>[] = [
   { value: "tiktok", label: "TikTok" },
   { value: "instagram_reels", label: "Instagram Reels" },
   { value: "youtube_shorts", label: "YouTube Shorts" },
+  { value: "youtube_largo", label: "YouTube (video largo)" },
   { value: "linkedin", label: "LinkedIn" },
 ];
+
+export const TIPO_DE_KIT_OPTIONS: Option<TipoDeKit>[] = [
+  {
+    value: "vertical",
+    label: "Video vertical corto",
+    description: "Reels, TikTok, Shorts. Varias piezas por semana.",
+  },
+  {
+    value: "youtube_largo",
+    label: "Video largo de YouTube",
+    description:
+      "Un video de 8 a 12 minutos cada dos semanas. Otro esquema: primero el par título/miniatura, después el guion.",
+  },
+];
+
+/** Las plataformas del kit vertical. `youtube_largo` tiene su propia rama. */
+export const PLATAFORMA_OPTIONS_VERTICAL: Option<Plataforma>[] =
+  PLATAFORMA_OPTIONS.filter((option) => option.value !== "youtube_largo");
 
 export const ETAPA_CUENTA_OPTIONS: Option<EtapaCuenta>[] = [
   {
@@ -68,6 +88,16 @@ export const FORMATO_OPTIONS: Option<Formato>[] = [
     description: "Slides o posts de texto, sin video hablado.",
   },
 ];
+
+/**
+ * El carrusel de texto no existe en video largo, así que no se ofrece ahí.
+ * Cámara y faceless sí: un video largo se puede grabar de las dos formas.
+ */
+export function opcionesDeFormato(tipoDeKit: TipoDeKit): Option<Formato>[] {
+  return tipoDeKit === "youtube_largo"
+    ? FORMATO_OPTIONS.filter((option) => option.value !== "texto_carrusel")
+    : FORMATO_OPTIONS;
+}
 
 export const EQUIPO_OPTIONS: Option<Equipo>[] = [
   { value: "solo", label: "Solo yo" },

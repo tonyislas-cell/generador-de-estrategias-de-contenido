@@ -200,3 +200,66 @@ export function esqueletoDePieza(
     ]),
   ]);
 }
+
+// ------------------------------------------------------- YouTube largo
+
+/**
+ * El par título/miniatura.
+ *
+ * Va antes del guion porque un video largo se decide antes de reproducirse:
+ * título y miniatura son una sola decisión del espectador, no dos. Si el par
+ * no se sostiene solo, el video no se hace.
+ */
+export function esqueletoDelPar(d: DialectoDeSalida): string {
+  return lines([
+    d.tituloDePieza("Par {n}"),
+    d.campo("Título", "{título}. Legible en móvil sin que se corte la parte que importa."),
+    d.campo(
+      "Miniatura",
+      "qué se ve, en una frase. Objetos y encuadre concretos: nada de «expresión de sorpresa» ni de gráficos que no pueda hacer yo."
+    ),
+    d.campo(
+      "Texto en miniatura",
+      "cuatro palabras como máximo, y ninguna repetida del título."
+    ),
+    d.campo("Promesa", "qué se lleva el espectador. Una línea."),
+    d.campo("Dónde se paga", "en qué minuto del video se cumple esa promesa."),
+  ]);
+}
+
+/** El guion de un video largo: por minutos, no por segundos. */
+export function esqueletoDelGuionLargo(d: DialectoDeSalida): string {
+  return lines([
+    d.rotulo("Primer minuto, palabra por palabra:"),
+    "Sin presentación, sin «bienvenidos» y sin decir mi nombre. Se entra directo al caso. Al cerrar ese minuto tiene que estar claro qué se lleva el espectador y por qué le conviene quedarse. Escríbelo completo, no en viñetas.",
+    "",
+    d.rotulo("Cuerpo, por bloques:"),
+    "| minuto | qué se dice (idea, no palabra por palabra) | qué se ve | por qué no se van aquí |",
+    "| 1-3 | | | |",
+    "| 3-… | | | |",
+    "",
+    "Cada bloque cierra abriendo el siguiente: ninguno termina cerrado. Marca los dos minutos donde creo que la gente se va, y qué pusiste ahí para retenerla. Al menos un bloque muestra criterio en un caso difícil.",
+    "",
+    d.campo(
+      "Capítulos",
+      "marcas de tiempo con nombre. La primera es exactamente 00:00, van al menos 3 en orden ascendente, cada una dura 10 segundos o más, y el formato es «0:00 Título» con los segundos a dos dígitos. Un punto en vez de dos puntos rompe la lista entera en silencio. Títulos descriptivos y por debajo de 40 caracteres: «Introducción» y «Parte 1» no dicen nada."
+    ),
+    d.campo(
+      "Tomas de apoyo",
+      "lo que tengo que grabar aparte. Solo cosas que pueda grabar solo, con celular, en la misma sesión. Cinco como máximo."
+    ),
+    d.campo(
+      "Cierre",
+      "una sola llamada a la acción, de conversación o de guardado. Cero venta."
+    ),
+    d.campo(
+      "Descripción",
+      "primera línea como titular, escrita como alguien la buscaría de verdad, y las marcas de tiempo abajo."
+    ),
+    d.campo(
+      "Derivados verticales",
+      "dos ideas que salen de este video, cada una con su gancho nuevo regrabado. No son recortes: son piezas nuevas que usan el mismo material."
+    ),
+    d.campo("Por qué funciona", "una línea, honesta."),
+  ]);
+}

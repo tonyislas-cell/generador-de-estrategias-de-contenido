@@ -5,7 +5,7 @@ import { CheckboxGroup } from "./CheckboxGroup";
 import { ChoiceCardGroup } from "./ChoiceCardGroup";
 import {
   ETAPA_CUENTA_OPTIONS,
-  PLATAFORMA_OPTIONS,
+  PLATAFORMA_OPTIONS_VERTICAL,
   TONO_OPTIONS,
 } from "@/lib/wizard/options";
 import type { StepProps } from "./step-props";
@@ -47,7 +47,7 @@ export function Step1Contexto({ answers, onChange }: StepProps) {
         <Label>Plataforma(s) donde vas a publicar</Label>
         <CheckboxGroup
           name="plataformas"
-          options={PLATAFORMA_OPTIONS}
+          options={PLATAFORMA_OPTIONS_VERTICAL}
           selected={answers.plataformas}
           onChange={(plataformas) => onChange({ plataformas })}
         />

@@ -8,6 +8,7 @@ import {
   objetivoLabel,
   plataformaLabel,
   tiempoPorPiezaLabel,
+  tipoDeKitLabel,
   tonoLabel,
 } from "./labels";
 import type { WizardAnswers } from "./types";
@@ -21,6 +22,9 @@ export function getSummaryItems(answers: WizardAnswers): SummaryItem[] {
   const items: SummaryItem[] = [];
   const visibleStepIds = new Set(getVisibleSteps(answers).map((s) => s.id));
 
+  if (answers.tipoDeKit) {
+    items.push({ label: "Qué produces", value: tipoDeKitLabel(answers.tipoDeKit) });
+  }
   if (answers.nicho) {
     items.push({ label: "Nicho o industria", value: answers.nicho });
   }

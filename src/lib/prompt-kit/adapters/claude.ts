@@ -1,8 +1,10 @@
 import type { PromptContext } from "../context";
-import type { MisionSemana } from "../misiones";
+import type { MisionDeTanda } from "../misiones";
 import { bullets, lines, present, sections } from "./prose";
 import { bloqueSinCubrir, type PromptAdapter } from "./types";
 import {
+  esqueletoDelGuionLargo,
+  esqueletoDelPar,
   esqueletoDePieza,
   type DialectoDeSalida,
 } from "../plantillas";
@@ -312,7 +314,7 @@ function buildSetup(ctx: PromptContext): string {
 
 // --------------------------------------------------------- bloque semanal
 
-function restriccionesDuras(ctx: PromptContext, mision: MisionSemana): string {
+function restriccionesDuras(ctx: PromptContext, mision: MisionDeTanda): string {
   const equipoListado = ctx.equipos
     .map((e) => `«${e.label.toLowerCase()}»`)
     .join(" o ");
@@ -358,7 +360,7 @@ function antesDeEscribir(ctx: PromptContext): string {
 function formatoDeSalida(
   ctx: PromptContext,
   semana: number,
-  mision: MisionSemana
+  mision: MisionDeTanda
 ): string {
   const conexion =
     semana > 1
@@ -466,6 +468,104 @@ function buildSemana(ctx: PromptContext, semana: number): string {
   ]);
 }
 
+
+/** La misión de la tanda, con el mismo guard que usa el bloque semanal. */
+function misionDeVideo(ctx: PromptContext, video: number): MisionDeTanda {
+  const mision = ctx.misiones[video - 1];
+  if (!mision) {
+    throw new Error(
+      `No hay misión definida para el video ${video} de un plan de ${ctx.totalVideos} videos.`
+    );
+  }
+  return mision;
+}
+
+// ------------------------------------------------------ video largo
+
+function buildParTitulo(ctx: PromptContext, video: number): string {
+  const mision = misionDeVideo(ctx, video);
+
+  return sections([
+    `<bloque_par_titulo video="${video}" de="${ctx.totalVideos}">`,
+    "Seguimos en la misma conversación, con el mismo contexto del primer mensaje. No lo repitas ni lo resumas.",
+    ["<mision_del_video>", mision.mision, "</mision_del_video>"].join("\n"),
+    lines([
+      "<antes_del_guion>",
+      "Todavía no escribas el guion. Un video largo se gana antes de reproducirse: el título y la miniatura son una sola decisión del espectador, no dos. Si el par no se sostiene solo, el video no se hace.",
+      "</antes_del_guion>",
+    ]),
+    lines([
+      "<formato_de_salida>",
+      "Dame 5 pares, con esta estructura exacta:",
+      "",
+      esqueletoDelPar(SALIDA),
+      "",
+      "Reglas:",
+      bullets([
+        "Los 5 prometen cosas distintas, no el mismo video con otro nombre.",
+        "La miniatura se graba con lo que tengo: celular, mi cara y objetos que ya existen en mi mundo. Nada de gráficos que yo no pueda hacer.",
+        "Si la promesa no se puede pagar antes del minuto 3, el par se descarta.",
+        "Ninguno usa las fórmulas prohibidas ni los clichés del nicho que tú mismo te prohibiste.",
+      ]),
+      "</formato_de_salida>",
+    ]),
+    lines([
+      "<cierre>",
+      "Después de los 5, marca el que escogerías y por qué, en una línea. Y para ahí: yo elijo el definitivo y te lo digo.",
+      "</cierre>",
+    ]),
+    "</bloque_par_titulo>",
+  ]);
+}
+
+function buildGuionLargo(ctx: PromptContext, video: number): string {
+  const mision = misionDeVideo(ctx, video);
+
+  return sections([
+    `<bloque_guion_largo video="${video}" de="${ctx.totalVideos}">`,
+    "Ya elegí el par. Escribe el guion de ese video.",
+    lines([
+      "<restricciones_duras>",
+      "1. Duración objetivo: entre 8 y 12 minutos. Un video de 8 minutos apretado rinde más que uno de 15 estirado.",
+      "2. La promesa del par elegido se paga en el minuto que ese par declaró, y nunca después del minuto 3 si el título la promete de entrada.",
+      `3. ${mision.reglaCTA}`,
+      `4. Prueba del reemplazo: si cambias «${ctx.answers.nicho}» por otro rubro y el video sigue funcionando, está mal.`,
+      "5. Nada que necesite a otra persona ni equipo que no esté declarado arriba.",
+      "</restricciones_duras>",
+    ]),
+    lines([
+      "<formato_de_salida>",
+      "Empieza con el título elegido, la promesa textual del par y el minuto en que se paga. Después:",
+      "",
+      esqueletoDelGuionLargo(SALIDA),
+      "</formato_de_salida>",
+    ]),
+    verificacionDelVideo(ctx),
+    siTeQuedasSinEspacio(),
+    "</bloque_guion_largo>",
+  ]);
+}
+
+/** La verificación se imprime: una revisión en silencio no se puede auditar. */
+function verificacionDelVideo(ctx: PromptContext): string {
+  return lines([
+    "<verificacion>",
+    "Imprime esta tabla al final. Si una celda falla, corrige el guion antes de mandarme la respuesta y deja la celda en OK. No me expliques la corrección.",
+    "",
+    "| duración objetivo | suma del minutaje | minuto donde se paga la promesa | caracteres del título | palabras en la miniatura | tomas de apoyo | datos que inventaste |",
+    "",
+    "Y después, en una línea cada uno:",
+    bullets([
+      "¿El título promete algo que el video no entrega antes del minuto 3?",
+      "¿La miniatura se puede grabar sola, con celular y con lo que hay?",
+      "¿El primer minuto se presenta a sí mismo en vez de entrar al caso?",
+      "¿Algún bloque cierra sin abrir el siguiente? Cuál.",
+    ]),
+    `Prueba del reemplazo: ¿este video funcionaría igual en otro nicho que no sea «${ctx.answers.nicho}»?`,
+    "</verificacion>",
+  ]);
+}
+
 export const claudeAdapter: PromptAdapter = {
   build: (ctx, req) => {
     // `switch` con rama por defecto imposible, y no un ternario: cuando entre
@@ -476,6 +576,10 @@ export const claudeAdapter: PromptAdapter = {
         return buildSetup(ctx);
       case "semana":
         return buildSemana(ctx, req.semana);
+      case "par_titulo":
+        return buildParTitulo(ctx, req.video);
+      case "guion_largo":
+        return buildGuionLargo(ctx, req.video);
       default:
         return bloqueSinCubrir(req);
     }

@@ -51,7 +51,7 @@ describe("getAllTrends", () => {
     const all = await getAllTrends();
 
     expect(Object.keys(all).sort()).toEqual(
-      ["instagram_reels", "linkedin", "tiktok", "youtube_shorts"].sort()
+      ["instagram_reels", "linkedin", "tiktok", "youtube_largo", "youtube_shorts"].sort()
     );
     expect(all.tiktok?.plataforma).toBe("tiktok");
   });

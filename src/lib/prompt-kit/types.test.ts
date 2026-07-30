@@ -25,6 +25,7 @@ const semana = (numero: number) => ({ unidad: "semana", numero }) as const;
 function kit(bloques: [PromptBlock, ...PromptBlock[]]): PromptKit {
   return {
     modelo: "claude",
+    tipoDeKit: "vertical",
     duracion: "14_dias",
     plataformaPrincipal: "tiktok",
     bloques,

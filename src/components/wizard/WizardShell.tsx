@@ -8,6 +8,7 @@ import { useWizard } from "@/lib/wizard/useWizard";
 import type { StepId } from "@/lib/wizard/types";
 import { DURACION_OPTIONS } from "@/lib/prompt-kit/types";
 import { MODELO_OPTIONS } from "@/lib/prompt-kit/adapters";
+import { Step0Tipo } from "./Step0Tipo";
 import { Step1Contexto } from "./Step1Contexto";
 import { Step2Objetivo } from "./Step2Objetivo";
 import { Step3Formato } from "./Step3Formato";
@@ -21,6 +22,7 @@ import { PromptKitResult } from "@/components/kit/PromptKitResult";
 import type { StepProps } from "./step-props";
 
 const STEP_COMPONENTS: Record<StepId, ComponentType<StepProps>> = {
+  tipo: Step0Tipo,
   contexto: Step1Contexto,
   objetivo: Step2Objetivo,
   formato: Step3Formato,

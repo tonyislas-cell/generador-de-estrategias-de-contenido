@@ -185,6 +185,62 @@ export const MECANICA_POR_PLATAFORMA: Record<Plataforma, MecanicaPlataforma> = {
     discutido: [],
   },
 
+  youtube_largo: {
+    revisada: REVISADA,
+    confirmado: [
+      {
+        etiqueta: "El CTR consigue el clic, la retención consigue la siguiente impresión",
+        valor:
+          "un CTR alto con retención baja te perjudica: la plataforma lo lee como anzuelo. Se reporta que por debajo de ~40% de retención el video se despriorizada sin importar el CTR.",
+      },
+      {
+        etiqueta: "Dónde se pierde el video",
+        valor:
+          "los primeros 30 segundos y el sostén hasta la mitad son lo que más pesa. Una caída fuerte al inicio es peor señal que no haber conseguido el clic. Las encuestas de satisfacción del espectador pesan más que el tiempo de visualización crudo.",
+      },
+      {
+        etiqueta: "Contribución a la sesión",
+        valor:
+          "cuánto extiende tu video la sesión del usuario es señal principal en formato largo. Por eso las series y las listas de reproducción rinden más que subidas sueltas.",
+      },
+      {
+        etiqueta: "La miniatura corresponde a los primeros 60 segundos",
+        valor:
+          "si la miniatura muestra algo, esos primeros segundos lo entregan. Es la regla dura de coherencia del formato.",
+      },
+      {
+        etiqueta: "Miniatura",
+        valor:
+          "1280 × 720 px, 16:9. JPG para foto, a calidad 85 y por debajo de 2 MB. YouTube encima la duración del video en la esquina inferior derecha y no se puede mover: nada importante en ese 15%. Se muestra desde 116 × 65 px en móvil, así que si no se lee a ese tamaño, no se lee.",
+      },
+      {
+        etiqueta: "Capítulos",
+        valor:
+          "tres condiciones, y si falla una no se activan: la primera marca es exactamente 00:00; hay 3 marcas como mínimo, en orden ascendente; cada capítulo dura al menos 10 segundos. Formato «0:00 Título», uno por línea, con los segundos a dos dígitos. Un punto en vez de dos puntos rompe la lista entera, en silencio.",
+      },
+      {
+        etiqueta: "Búsqueda",
+        valor:
+          "la gente busca en preguntas completas, no en palabras clave estilo 2019. Los primeros 100 caracteres de la descripción tienen que reflejar lo que una persona escribiría de verdad.",
+      },
+      {
+        etiqueta: "Estructura",
+        valor:
+          "un video de 8 minutos apretado casi siempre rinde más que uno de 15 estirado. El ritmo va más apretado en los primeros tres minutos y puede aflojar cuando el espectador ya se comprometió. Una sola llamada a la acción por video: con dos opciones, no elige ninguna. Las listas de consejos se olvidan; los mismos consejos con contraste, conflicto y consecuencia se quedan.",
+      },
+      {
+        etiqueta: "Shorts y largo están separados",
+        valor:
+          "el rendimiento de uno ya no arrastra al otro. Y recortar este video en vertical con la interfaz de YouTube encima está prohibido: el derivado se regraba.",
+      },
+    ],
+    discutido: [
+      "El tope de peso de la miniatura: las fuentes se contradicen entre 2 MB y 50 MB, y el aumento parece estar en despliegue. Quédate por debajo de 2 MB y no tienes problema.",
+      "El «efecto sándwich», que tu video suba si cae entre dos de alta retención en una sesión.",
+      "La «memoria de 90 días» del algoritmo. Es lectura de terceros, no documentación.",
+    ],
+  },
+
   linkedin: {
     revisada: REVISADA,
     // La hoja de plataforma no cubre LinkedIn. Dejarlo vacío es la respuesta

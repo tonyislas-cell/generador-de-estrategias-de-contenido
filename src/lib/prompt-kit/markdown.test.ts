@@ -5,6 +5,7 @@ import type { PromptKit } from "./types";
 function buildKit(overrides: Partial<PromptKit> = {}): PromptKit {
   return {
     modelo: "claude",
+    tipoDeKit: "vertical",
     duracion: "14_dias",
     plataformaPrincipal: "tiktok",
     bloques: [
@@ -99,13 +100,13 @@ describe("buildKitMarkdown", () => {
 describe("kitFileName", () => {
   it("identifies the model and the 14-day duration", () => {
     expect(kitFileName(buildKit({ modelo: "claude", duracion: "14_dias" }))).toBe(
-      "kit-prompts-claude-14-dias.md"
+      "kit-prompts-vertical-claude-14-dias.md"
     );
   });
 
   it("identifies the model and the 1-month duration", () => {
     expect(kitFileName(buildKit({ modelo: "gemini", duracion: "1_mes" }))).toBe(
-      "kit-prompts-gemini-1-mes.md"
+      "kit-prompts-vertical-gemini-1-mes.md"
     );
   });
 

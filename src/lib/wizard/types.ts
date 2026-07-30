@@ -8,6 +8,7 @@ export type Plataforma =
   | "tiktok"
   | "instagram_reels"
   | "youtube_shorts"
+  | "youtube_largo"
   | "linkedin";
 
 export type Tono =
@@ -16,6 +17,13 @@ export type Tono =
   | "divertido"
   | "provocador"
   | "profesional";
+
+/**
+ * Qué se produce. Excluyente: un plan de verticales y uno de video largo no
+ * comparten cadencia ni entregable, así que quien hace las dos cosas corre el
+ * cuestionario dos veces.
+ */
+export type TipoDeKit = "vertical" | "youtube_largo";
 
 export type Objetivo = "lanzamiento" | "autoridad";
 
@@ -37,6 +45,9 @@ export type EstiloGancho =
 export type EtapaCuenta = "nueva" | "establecida";
 
 export interface WizardAnswers {
+  // Capa 0 — Qué se produce
+  tipoDeKit?: TipoDeKit;
+
   // Capa 1 — Contexto fijo
   nicho?: string;
   audiencia?: string;
@@ -69,6 +80,7 @@ export interface WizardAnswers {
 }
 
 export type StepId =
+  | "tipo"
   | "contexto"
   | "objetivo"
   | "formato"

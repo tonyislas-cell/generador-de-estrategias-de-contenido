@@ -23,5 +23,6 @@ export function buildKitMarkdown(kit: PromptKit): string {
 
 /** El modelo ya es un slug válido; la duración solo necesita guiones en vez de guiones bajos. */
 export function kitFileName(kit: PromptKit): string {
-  return `kit-prompts-${kit.modelo}-${kit.duracion.replace(/_/g, "-")}.md`;
+  const tipo = kit.tipoDeKit === "youtube_largo" ? "youtube" : "vertical";
+  return `kit-prompts-${tipo}-${kit.modelo}-${kit.duracion.replace(/_/g, "-")}.md`;
 }

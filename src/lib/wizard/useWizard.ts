@@ -13,7 +13,7 @@ export type WizardStatus =
   | "modelos"
   | "result";
 
-const FIRST_STEP_ID: StepId = "contexto";
+const FIRST_STEP_ID: StepId = "tipo";
 const DEFAULT_DURACION: Duracion = "14_dias";
 const DEFAULT_MODELOS: ModeloIA[] = [];
 

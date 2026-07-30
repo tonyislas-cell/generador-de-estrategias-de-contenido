@@ -7,6 +7,7 @@ describe("getVisibleSteps", () => {
     const steps = getVisibleSteps({});
 
     expect(steps.map((s) => s.id)).toEqual([
+      "tipo",
       "contexto",
       "objetivo",
       "formato",
@@ -21,6 +22,7 @@ describe("getVisibleSteps", () => {
     const steps = getVisibleSteps(answers);
 
     expect(steps.map((s) => s.id)).toEqual([
+      "tipo",
       "contexto",
       "objetivo",
       "formato",
@@ -36,7 +38,7 @@ describe("getVisibleSteps", () => {
     const steps = getVisibleSteps(answers);
 
     expect(steps.map((s) => s.id)).not.toContain("oferta");
-    expect(steps).toHaveLength(5);
+    expect(steps).toHaveLength(6);
   });
 
   it("drops the oferta step immediately if objetivo changes away from lanzamiento", () => {

@@ -7,6 +7,7 @@ import {
   OBJETIVO_OPTIONS,
   PLATAFORMA_OPTIONS,
   TIEMPO_POR_PIEZA_OPTIONS,
+  TIPO_DE_KIT_OPTIONS,
   TONO_OPTIONS,
 } from "./options";
 import type { Option } from "./types";
@@ -25,3 +26,4 @@ export const tiempoPorPiezaLabel = labelFor(TIEMPO_POR_PIEZA_OPTIONS);
 export const frecuenciaLabel = labelFor(FRECUENCIA_OPTIONS);
 export const estiloGanchoLabel = labelFor(ESTILO_GANCHO_OPTIONS);
 export const etapaCuentaLabel = labelFor(ETAPA_CUENTA_OPTIONS);
+export const tipoDeKitLabel = labelFor(TIPO_DE_KIT_OPTIONS);

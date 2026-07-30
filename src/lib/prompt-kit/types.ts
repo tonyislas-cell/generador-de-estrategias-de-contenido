@@ -1,4 +1,4 @@
-import type { Option, Plataforma } from "@/lib/wizard/types";
+import type { Option, Plataforma, TipoDeKit } from "@/lib/wizard/types";
 
 /** Modelos de IA para los que sabemos generar un kit. */
 export type ModeloIA = "claude" | "chatgpt" | "gemini";
@@ -7,12 +7,14 @@ export type Duracion = "14_dias" | "1_mes";
 
 interface DuracionConfig {
   semanas: number;
+  /** Cuántos videos largos entran en el mismo lapso: uno cada dos semanas. */
+  videos: number;
   etiqueta: string;
 }
 
 export const DURACION_CONFIG: Record<Duracion, DuracionConfig> = {
-  "14_dias": { semanas: 2, etiqueta: "14 días" },
-  "1_mes": { semanas: 4, etiqueta: "1 mes" },
+  "14_dias": { semanas: 2, videos: 1, etiqueta: "14 días" },
+  "1_mes": { semanas: 4, videos: 2, etiqueta: "1 mes" },
 };
 
 /** Derivado de `DURACION_CONFIG` para que la etiqueta del toggle y la del kit nunca diverjan. */
@@ -24,7 +26,11 @@ export const DURACION_OPTIONS: Option<Duracion>[] = (
   description: `${config.semanas} bloques semanales`,
 }));
 
-export type PromptBlockKind = "setup" | "semana";
+export type PromptBlockKind =
+  | "setup"
+  | "semana"
+  | "par_titulo"
+  | "guion_largo";
 
 /**
  * A qué tanda pertenece el bloque.
@@ -35,7 +41,7 @@ export type PromptBlockKind = "setup" | "semana";
  * es.
  */
 export interface PromptGrupo {
-  unidad: "semana";
+  unidad: "semana" | "video";
   /** 1-based. */
   numero: number;
 }
@@ -46,6 +52,7 @@ export interface PromptGrupo {
  */
 const NOMBRE_DE_UNIDAD: Record<PromptGrupo["unidad"], string> = {
   semana: "Semana",
+  video: "Video",
 };
 
 /**
@@ -73,6 +80,7 @@ export interface PromptBlock {
 
 export interface PromptKit {
   modelo: ModeloIA;
+  tipoDeKit: TipoDeKit;
   duracion: Duracion;
   plataformaPrincipal: Plataforma;
   /**

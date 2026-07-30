@@ -6,11 +6,13 @@ import type {
   Frecuencia,
   Plataforma,
   TiempoPorPieza,
+  TipoDeKit,
   Tono,
   WizardAnswers,
 } from "@/lib/wizard/types";
 
 interface KitAnswersBase {
+  tipoDeKit: TipoDeKit;
   nicho: string;
   audiencia: string;
   plataformas: [Plataforma, ...Plataforma[]];
@@ -69,6 +71,8 @@ export function toKitAnswers(answers: WizardAnswers): KitAnswers | null {
   const equipo = asNonEmpty(answers.equipo);
   const formato = asNonEmpty(answers.formato);
   const { tono, etapaCuenta, tiempoPorPieza, frecuencia, objetivo } = answers;
+  // Los estados guardados antes de que existiera la pregunta son de verticales.
+  const tipoDeKit = answers.tipoDeKit ?? "vertical";
 
   if (!nicho || !audiencia || !plataformas || !estilosGancho || !equipo || !formato) {
     return null;
@@ -79,6 +83,7 @@ export function toKitAnswers(answers: WizardAnswers): KitAnswers | null {
   if (!objetivo) return null;
 
   const base: KitAnswersBase = {
+    tipoDeKit,
     nicho,
     audiencia,
     plataformas,

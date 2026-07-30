@@ -1,4 +1,4 @@
-import type { Formato, Plataforma } from "@/lib/wizard/types";
+import type { Formato, Plataforma, TipoDeKit } from "@/lib/wizard/types";
 import type { TrendsSnippet } from "@/lib/trends/types";
 import * as labels from "@/lib/wizard/labels";
 import {
@@ -11,7 +11,11 @@ import {
   TONO_DESCRIPTOR,
   piezasLabel,
 } from "./descriptors";
-import { getMisiones, type MisionSemana } from "./misiones";
+import {
+  getMisiones,
+  getMisionesDeVideo,
+  type MisionDeTanda,
+} from "./misiones";
 import {
   MECANICA_POR_PLATAFORMA,
   type MecanicaPlataforma,
@@ -30,9 +34,12 @@ export interface PromptContext {
   answers: KitAnswers;
   trends: TrendsSnippet;
 
+  tipoDeKit: TipoDeKit;
   duracion: Duracion;
   duracionEtiqueta: string;
   totalSemanas: number;
+  /** Cuántos videos largos trae el plan. Solo aplica al kit de video largo. */
+  totalVideos: number;
 
   plataformaPrincipal: Plataforma;
   plataformaPrincipalLabel: string;
@@ -60,7 +67,7 @@ export interface PromptContext {
   /** Con volumen alto conviene pedir que agrupe grabaciones en un mismo día. */
   requiereAgrupado: boolean;
 
-  misiones: MisionSemana[];
+  misiones: MisionDeTanda[];
 }
 
 export function buildContext(
@@ -73,14 +80,17 @@ export function buildContext(
   // y el kit hablaría de una plataforma con los datos de otra.
   const plataformaPrincipal = trends.plataforma;
   const piezasPorSemana = PIEZAS_POR_SEMANA[answers.frecuencia];
+  const { tipoDeKit } = answers;
 
   return {
     answers,
     trends,
 
+    tipoDeKit,
     duracion,
     duracionEtiqueta: DURACION_CONFIG[duracion].etiqueta,
     totalSemanas: DURACION_CONFIG[duracion].semanas,
+    totalVideos: DURACION_CONFIG[duracion].videos,
 
     plataformaPrincipal,
     plataformaPrincipalLabel: labels.plataformaLabel(plataformaPrincipal),
@@ -115,6 +125,11 @@ export function buildContext(
     piezasPorSemanaLabel: piezasLabel(piezasPorSemana),
     requiereAgrupado: piezasPorSemana >= 3,
 
-    misiones: getMisiones(answers.objetivo, duracion),
+    // El arco depende del tipo de kit: uno avanza por semanas y el otro por
+    // videos, y cada tanda tiene su propio trabajo dentro del plan.
+    misiones:
+      tipoDeKit === "youtube_largo"
+        ? getMisionesDeVideo(answers.objetivo, duracion)
+        : getMisiones(answers.objetivo, duracion),
   };
 }

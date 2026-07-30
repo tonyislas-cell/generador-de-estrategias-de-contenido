@@ -28,18 +28,46 @@ function fichaDe(req: BloqueRequest): Ficha {
     };
   }
 
-  const { semana } = req;
-  const grupo = { unidad: "semana", numero: semana } as const;
+  if (req.kind === "semana") {
+    const { semana } = req;
+    const grupo = { unidad: "semana", numero: semana } as const;
+
+    return {
+      id: `semana-${semana}`,
+      kind: "semana",
+      grupo,
+      nombre: etiquetaDeGrupo(grupo),
+      descripcion:
+        semana === 1
+          ? "Pégalo después de que el modelo confirme el contexto, en la misma conversación."
+          : `Pégalo cuando ya tengas los guiones de la Semana ${semana - 1}, en la misma conversación.`,
+    };
+  }
+
+  const { video } = req;
+  const grupo = { unidad: "video", numero: video } as const;
+  const etiqueta = etiquetaDeGrupo(grupo);
+
+  if (req.kind === "par_titulo") {
+    return {
+      id: `video-${video}-par`,
+      kind: "par_titulo",
+      grupo,
+      nombre: `${etiqueta} · Título y miniatura`,
+      descripcion:
+        video === 1
+          ? "Pégalo después de que el modelo confirme el contexto. Te va a dar cinco pares y esperar a que elijas uno."
+          : `Pégalo cuando ya tengas el guion del Video ${video - 1}, en la misma conversación.`,
+    };
+  }
 
   return {
-    id: `semana-${semana}`,
-    kind: "semana",
+    id: `video-${video}-guion`,
+    kind: "guion_largo",
     grupo,
-    nombre: etiquetaDeGrupo(grupo),
+    nombre: `${etiqueta} · Guion`,
     descripcion:
-      semana === 1
-        ? "Pégalo después de que el modelo confirme el contexto, en la misma conversación."
-        : `Pégalo cuando ya tengas los guiones de la Semana ${semana - 1}, en la misma conversación.`,
+      "Pégalo después de decirle cuál de los cinco pares elegiste, en la misma conversación.",
   };
 }
 
@@ -64,7 +92,7 @@ export function generatePromptKit(
   const ctx = buildContext(answers, trendsSnippet, duracion);
   const adapter = ADAPTERS[modelo];
 
-  const [primero, ...resto] = planDeBloques(duracion).map(
+  const [primero, ...resto] = planDeBloques(answers.tipoDeKit, duracion).map(
     (req, index): PromptBlock => {
       const { nombre, ...ficha } = fichaDe(req);
       return {
@@ -79,6 +107,7 @@ export function generatePromptKit(
 
   return {
     modelo,
+    tipoDeKit: answers.tipoDeKit,
     duracion,
     plataformaPrincipal: ctx.plataformaPrincipal,
     bloques: [primero, ...resto],

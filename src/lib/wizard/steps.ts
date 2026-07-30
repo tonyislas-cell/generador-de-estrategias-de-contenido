@@ -5,19 +5,30 @@ export interface StepDefinition {
   title: string;
   /** Returns true once every field this step asks for has an answer. */
   isAnswered: (answers: WizardAnswers) => boolean;
+  /** Ausente = el paso siempre se muestra. */
+  isVisible?: (answers: WizardAnswers) => boolean;
 }
 
 const hasText = (value: string | undefined) => Boolean(value && value.trim());
 const hasItems = (value: unknown[] | undefined) => Boolean(value && value.length > 0);
 
+/** El kit de video largo tiene su propia plataforma y su propia cadencia. */
+const esVertical = (a: WizardAnswers) => (a.tipoDeKit ?? "vertical") === "vertical";
+
 const STEP_DEFINITIONS: StepDefinition[] = [
+  {
+    id: "tipo",
+    title: "Qué vas a producir",
+    isAnswered: (a) => Boolean(a.tipoDeKit),
+  },
   {
     id: "contexto",
     title: "Contexto",
     isAnswered: (a) =>
       hasText(a.nicho) &&
       hasText(a.audiencia) &&
-      hasItems(a.plataformas) &&
+      // En video largo la plataforma es una sola y no se pregunta.
+      (!esVertical(a) || hasItems(a.plataformas)) &&
       hasText(a.tono) &&
       hasText(a.etapaCuenta),
   },
@@ -35,7 +46,11 @@ const STEP_DEFINITIONS: StepDefinition[] = [
     id: "recursos",
     title: "Recursos y restricciones",
     isAnswered: (a) =>
-      hasItems(a.equipo) && Boolean(a.tiempoPorPieza) && Boolean(a.frecuencia),
+      hasItems(a.equipo) &&
+      Boolean(a.tiempoPorPieza) &&
+      // La cadencia del video largo sale de la duración: un video cada dos
+      // semanas. Preguntar una frecuencia semanal ahí no significaría nada.
+      (!esVertical(a) || Boolean(a.frecuencia)),
   },
   {
     id: "gancho",
@@ -47,16 +62,11 @@ const STEP_DEFINITIONS: StepDefinition[] = [
     title: "Oferta / CTA",
     isAnswered: (a) =>
       hasText(a.oferta) && hasText(a.objeciones) && hasText(a.pruebaSocial),
+    // Solo en el camino de lanzamiento/conversión.
+    isVisible: (a) => a.objetivo === "lanzamiento",
   },
 ];
 
-/**
- * The layer-6 branch is the only conditional edge in the questionnaire: it
- * only applies on the lanzamiento/conversión path (layer 2).
- */
 export function getVisibleSteps(answers: WizardAnswers): StepDefinition[] {
-  return STEP_DEFINITIONS.filter((step) => {
-    if (step.id === "oferta") return answers.objetivo === "lanzamiento";
-    return true;
-  });
+  return STEP_DEFINITIONS.filter((step) => step.isVisible?.(answers) ?? true);
 }

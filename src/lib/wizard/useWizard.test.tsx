@@ -8,11 +8,11 @@ describe("useWizard", () => {
     window.localStorage.clear();
   });
 
-  it("starts on the contexto step once hydrated", async () => {
+  it("starts on the tipo step once hydrated", async () => {
     const { result } = renderHook(() => useWizard());
 
     await waitFor(() => expect(result.current.status).toBe("in-progress"));
-    expect(result.current.currentStep?.id).toBe("contexto");
+    expect(result.current.currentStep?.id).toBe("tipo");
     expect(result.current.canGoBack).toBe(false);
   });
 
@@ -28,7 +28,8 @@ describe("useWizard", () => {
         tono: "cercano",
       });
     });
-    act(() => result.current.goNext());
+    act(() => result.current.goNext()); // tipo -> contexto
+    act(() => result.current.goNext()); // contexto -> objetivo
 
     expect(result.current.currentStep?.id).toBe("objetivo");
     expect(loadWizardState()?.currentStepId).toBe("objetivo");
@@ -44,6 +45,7 @@ describe("useWizard", () => {
     });
     // objetivo -> formato -> recursos -> gancho -> summary (4 more goNext calls
     // from contexto, since objetivo was set on the contexto step's render pass)
+    act(() => result.current.goNext()); // tipo -> contexto
     act(() => result.current.goNext()); // contexto -> objetivo
     act(() => result.current.goNext()); // objetivo -> formato
     act(() => result.current.goNext()); // formato -> recursos
@@ -68,6 +70,7 @@ describe("useWizard", () => {
     await waitFor(() => expect(result.current.status).toBe("in-progress"));
 
     act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
+    act(() => result.current.goNext()); // tipo -> contexto
     act(() => result.current.goNext()); // -> objetivo
     act(() => result.current.updateAnswers({ formato: ["camara"] }));
     act(() => result.current.goNext()); // -> formato
@@ -82,7 +85,7 @@ describe("useWizard", () => {
     await waitFor(() => expect(result.current.status).toBe("in-progress"));
 
     act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
-    for (let i = 0; i < 5; i++) act(() => result.current.goNext());
+    for (let i = 0; i < 6; i++) act(() => result.current.goNext());
     expect(result.current.status).toBe("summary");
 
     act(() => result.current.goBack());
@@ -97,7 +100,8 @@ describe("useWizard", () => {
     act(() => {
       first.result.current.updateAnswers({ nicho: "Finanzas personales" });
     });
-    act(() => first.result.current.goNext());
+    act(() => first.result.current.goNext()); // tipo -> contexto
+    act(() => first.result.current.goNext()); // contexto -> objetivo
 
     const second = renderHook(() => useWizard());
     await waitFor(() => expect(second.result.current.status).toBe("in-progress"));
@@ -115,12 +119,12 @@ describe("useWizard", () => {
     act(() => result.current.restart());
 
     expect(result.current.answers).toEqual({});
-    expect(result.current.currentStep?.id).toBe("contexto");
+    expect(result.current.currentStep?.id).toBe("tipo");
 
     const reloaded = renderHook(() => useWizard());
     await waitFor(() => expect(reloaded.result.current.status).toBe("in-progress"));
     expect(reloaded.result.current.answers).toEqual({});
-    expect(reloaded.result.current.currentStep?.id).toBe("contexto");
+    expect(reloaded.result.current.currentStep?.id).toBe("tipo");
   });
 
   it("goNext from the summary reaches the modelos status, then the result status", async () => {
@@ -128,7 +132,7 @@ describe("useWizard", () => {
     await waitFor(() => expect(result.current.status).toBe("in-progress"));
 
     act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
-    for (let i = 0; i < 5; i++) act(() => result.current.goNext());
+    for (let i = 0; i < 6; i++) act(() => result.current.goNext());
     expect(result.current.status).toBe("summary");
 
     act(() => result.current.goNext());
@@ -143,7 +147,7 @@ describe("useWizard", () => {
     await waitFor(() => expect(result.current.status).toBe("in-progress"));
 
     act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
-    for (let i = 0; i < 6; i++) act(() => result.current.goNext());
+    for (let i = 0; i < 7; i++) act(() => result.current.goNext());
     expect(result.current.status).toBe("modelos");
     expect(result.current.currentStep).toBeNull();
     expect(result.current.isLastStep).toBe(false);
@@ -164,7 +168,7 @@ describe("useWizard", () => {
     await waitFor(() => expect(result.current.status).toBe("in-progress"));
 
     act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
-    for (let i = 0; i < 8; i++) act(() => result.current.goNext());
+    for (let i = 0; i < 9; i++) act(() => result.current.goNext());
 
     expect(result.current.status).toBe("result");
   });
@@ -174,7 +178,7 @@ describe("useWizard", () => {
     await waitFor(() => expect(result.current.status).toBe("in-progress"));
 
     act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
-    for (let i = 0; i < 7; i++) act(() => result.current.goNext());
+    for (let i = 0; i < 8; i++) act(() => result.current.goNext());
     expect(result.current.status).toBe("result");
 
     act(() => result.current.goBack());
@@ -189,7 +193,7 @@ describe("useWizard", () => {
     await waitFor(() => expect(result.current.status).toBe("in-progress"));
 
     act(() => result.current.updateAnswers({ objetivo: "autoridad" }));
-    for (let i = 0; i < 5; i++) act(() => result.current.goNext());
+    for (let i = 0; i < 6; i++) act(() => result.current.goNext());
     expect(result.current.status).toBe("summary");
 
     act(() => result.current.goNext());
@@ -215,7 +219,7 @@ describe("useWizard", () => {
     await waitFor(() => expect(first.result.current.status).toBe("in-progress"));
 
     act(() => first.result.current.updateAnswers({ objetivo: "autoridad" }));
-    for (let i = 0; i < 7; i++) act(() => first.result.current.goNext());
+    for (let i = 0; i < 8; i++) act(() => first.result.current.goNext());
     expect(first.result.current.status).toBe("result");
 
     const second = renderHook(() => useWizard());

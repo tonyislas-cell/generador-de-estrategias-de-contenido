@@ -7,6 +7,7 @@ import type { PromptKit } from "@/lib/prompt-kit/types";
 
 const KIT: PromptKit = {
   modelo: "claude",
+  tipoDeKit: "vertical",
   duracion: "14_dias",
   plataformaPrincipal: "tiktok",
   bloques: [
