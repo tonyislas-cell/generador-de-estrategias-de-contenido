@@ -32,19 +32,19 @@ export const HERO = {
       ],
     },
     {
-      etiqueta: "Prompt 2 — Semana 1",
+      etiqueta: "Prompt 2 — Semana 1 · Ángulos",
       lineas: [
-        "<mision_de_la_semana>",
-        "Instalar la tesis: qué crees",
-        "que este nicho tiene mal…",
+        "Dame 12 ángulos. No escribas",
+        "guiones todavía: marca los 3",
+        "que tú escogerías, y para ahí.",
       ],
     },
     {
-      etiqueta: "Prompt 3 — Semana 2",
+      etiqueta: "Prompt 3 — Semana 1 · Guiones",
       lineas: [
-        "<continuidad>",
-        "Ganchos ya usados, ángulos",
-        "quemados, qué queda pendiente…",
+        "| s | qué se dice | texto |",
+        "La suma tiene que dar la",
+        "duración objetivo…",
       ],
     },
   ],
@@ -61,9 +61,9 @@ export const COMO_FUNCIONA = {
   titulo: "Tres pasos, y el tercero es el que importa",
   pasos: [
     {
-      titulo: "Respondes el cuestionario",
+      titulo: "Eliges qué produces y respondes",
       cuerpo:
-        "Doce preguntas, quince si estás lanzando algo. Nicho, audiencia, tono y estilo de gancho, pero también cuánto tiempo tienes por pieza y con qué equipo cuentas. Entre tres y cinco minutos.",
+        "Primero, si vas por video vertical corto o por video largo de YouTube: son dos kits distintos y no se mezclan. Después, nicho, audiencia, tono y estilo de gancho, más cuánto tiempo tienes por pieza y con qué equipo cuentas. Entre tres y cinco minutos.",
       detalle:
         "Esa última parte es la que evita que el plan te proponga cosas que no vas a poder grabar.",
     },
@@ -74,11 +74,11 @@ export const COMO_FUNCIONA = {
       detalle: "Plan de catorce días o de un mes.",
     },
     {
-      titulo: "Pegas los bloques de a uno",
+      titulo: "Pegas los bloques de a uno, y eliges en el medio",
       cuerpo:
-        "Acá está la diferencia. No es un botón de «genérame treinta posts». Pegas el primero, esperas a que el modelo confirme que entendió tu contexto, y recién entonces el siguiente.",
+        "Acá está la diferencia. No es un botón de «genérame treinta posts». Cada semana son dos bloques: el primero te da doce ángulos y se detiene, tú marcas tres, y el segundo escribe esos tres.",
       detalle:
-        "Cada bloque semanal arrastra la memoria de lo ya usado, así la semana tres no te repite la semana uno.",
+        "Los mejores tres de doce le ganan a los primeros tres. Ese es el único punto donde entra tu criterio, y es el que decide la calidad del plan entero.",
     },
   ],
 } as const;
@@ -87,7 +87,7 @@ export const QUE_RECIBES = {
   eyebrow: "Qué te llevas",
   titulo: "Prompts, no contenido ya escrito",
   entrada:
-    "Un bloque de configuración que instala el contexto, y después un bloque por semana. Todo en texto plano, tuyo para editar antes de pegarlo.",
+    "Un bloque de configuración que instala el contexto, y después dos por semana: uno para elegir ángulos y otro para escribirlos. Todo en texto plano, tuyo para editar antes de pegarlo.",
   bloques: {
     titulo: "La estructura del kit",
     setup: {
@@ -96,9 +96,9 @@ export const QUE_RECIBES = {
         "Instala quién eres, a quién le hablas y qué no se puede escribir. El modelo confirma el contexto y se detiene: todavía no escribe guiones, y eso es a propósito.",
     },
     semanal: {
-      etiqueta: "Prompt 2 en adelante — un bloque por semana",
+      etiqueta: "Prompt 2 en adelante — dos bloques por semana",
       cuerpo:
-        "Cada uno trae la misión de esa semana, el número exacto de piezas que puedes sostener, y un control de calidad que el modelo se aplica a sí mismo antes de entregarte nada.",
+        "El de ángulos trae la misión de esa semana y se detiene con doce ideas sobre la mesa. El de guiones escribe los tres que elegiste, con tabla de segundos, tres ganchos por pieza y una verificación que el modelo tiene que imprimir, no hacer en silencio.",
     },
   },
   extras: {
@@ -106,13 +106,14 @@ export const QUE_RECIBES = {
     items: [
       "Una pestaña por modelo, si elegiste más de uno.",
       "Descarga del kit completo en .md para guardarlo o pasarlo a tu equipo.",
-      "Mecánicas reales de cada plataforma inyectadas en el prompt, incluida la lista de lo que ya está quemado.",
+      "Mecánicas reales de cada plataforma, con fecha, separando lo que la plataforma documenta de lo que solo repiten las guías de marketing.",
+      "Kit aparte para video largo de YouTube: primero el par título/miniatura, después el guion.",
     ],
   },
 } as const;
 
 export const ARCO = {
-  eyebrow: "El arco semanal",
+  eyebrow: "El arco del plan",
   titulo: "Cada semana tiene un trabajo distinto",
   entrada:
     "Sin esto, cada bloque sería intercambiable con el anterior y el plan se sentiría como una lista de ideas sueltas en vez de una campaña. Estos son los arcos reales del plan de un mes.",
