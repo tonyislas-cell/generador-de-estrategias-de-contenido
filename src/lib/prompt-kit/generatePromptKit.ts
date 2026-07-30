@@ -28,19 +28,31 @@ function fichaDe(req: BloqueRequest): Ficha {
     };
   }
 
-  if (req.kind === "semana") {
+  if (req.kind === "angulos" || req.kind === "guiones") {
     const { semana } = req;
     const grupo = { unidad: "semana", numero: semana } as const;
+    const etiqueta = etiquetaDeGrupo(grupo);
+
+    if (req.kind === "angulos") {
+      return {
+        id: `semana-${semana}-angulos`,
+        kind: "angulos",
+        grupo,
+        nombre: `${etiqueta} · Ángulos`,
+        descripcion:
+          semana === 1
+            ? "Pégalo después de que el modelo confirme el contexto. Te va a dar doce ángulos y esperar a que elijas tres."
+            : `Pégalo cuando ya publicaste la Semana ${semana - 1}. Trae un hueco para tus números: rellénalo antes de pegarlo.`,
+      };
+    }
 
     return {
-      id: `semana-${semana}`,
-      kind: "semana",
+      id: `semana-${semana}-guiones`,
+      kind: "guiones",
       grupo,
-      nombre: etiquetaDeGrupo(grupo),
+      nombre: `${etiqueta} · Guiones`,
       descripcion:
-        semana === 1
-          ? "Pégalo después de que el modelo confirme el contexto, en la misma conversación."
-          : `Pégalo cuando ya tengas los guiones de la Semana ${semana - 1}, en la misma conversación.`,
+        "Pégalo después de decirle cuáles tres ángulos elegiste, en la misma conversación.",
     };
   }
 

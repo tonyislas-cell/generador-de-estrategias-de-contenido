@@ -1,11 +1,15 @@
 import type { PromptContext } from "../context";
 import type { MisionDeTanda } from "../misiones";
-import { bullets, lines, present, sections } from "./prose";
+import { bullets, lines, sections } from "./prose";
 import { bloqueSinCubrir, type PromptAdapter } from "./types";
 import {
+  bloqueDeEstado,
   esqueletoDelGuionLargo,
   esqueletoDelPar,
   esqueletoDePieza,
+  formatoDeAngulos,
+  resultadosDeLaSemanaAnterior,
+  verificacionDeLaSemana,
   type DialectoDeSalida,
 } from "../plantillas";
 
@@ -47,6 +51,7 @@ const SALIDA: DialectoDeSalida = {
   nombreDeCampo: (nombre) => `**${nombre}:**`,
   cita: (_etiqueta, prosa) => prosa,
   rotulo: (texto) => `**${texto}**`,
+  bloqueLiteral: (_etiqueta, titulo, cuerpo) => `### ${titulo}\n${cuerpo}`,
 };
 
 // ---------------------------------------------------------------- setup
@@ -108,7 +113,23 @@ function oferta(ctx: PromptContext): string | null {
   ].join("\n");
 }
 
+
+/** La capacidad de producción del kit de video largo: por video, no por semana. */
+function capacidadDeVideoLargo(ctx: PromptContext): string {
+  return lines([
+    "## Capacidad de producción",
+    `- **Cadencia:** ${ctx.totalVideos === 1 ? "un video" : `${ctx.totalVideos} videos`} en ${ctx.duracionEtiqueta}, uno cada dos semanas. Un video largo no cabe en menos.`,
+    `- **Tiempo de producción:** ${ctx.tiempoDescriptor} Es el presupuesto por sesión de grabación, no por el video entero.`,
+    "- **Equipo disponible:**",
+    bullets(ctx.equipos.map((e) => `${e.label}: ${e.descriptor}`)),
+  ]);
+}
+
 function capacidadDeProduccion(ctx: PromptContext): string {
+  // En video largo la cadencia sale de la duración, no de una frecuencia
+  // semanal: no tiene sentido hablar de piezas por semana.
+  if (ctx.tipoDeKit === "youtube_largo") return capacidadDeVideoLargo(ctx);
+
   const agrupado = ctx.requiereAgrupado
     ? `- **Agrupado:** con ${ctx.piezasPorSemanaLabel} por semana y ${ctx.tiempoPorPiezaLabel.toLowerCase()} por pieza, agrupa en un mismo día las piezas que compartan encuadre, ropa o preparación, y marca cuáles se graban juntas.`
     : null;
@@ -179,7 +200,7 @@ function comoUsarLasTendencias(ctx: PromptContext): string {
     "## Cómo usar las tendencias",
     "Estas tendencias son datos que te doy yo. No son tu conocimiento propio: no las cites, no las menciones como «tendencia» en lo que me entregues, y no supongas que sabes algo más nuevo. Úsalas así:",
     bullets([
-      "Formatos que rinden: al menos la mitad de las piezas de cada semana sale de ahí.",
+      "Formatos que rinden: al menos la mitad de las piezas de cada tanda sale de ahí.",
       "Patrones de gancho: son patrones, no plantillas. Nunca copies la frase literal.",
       "Señales que premia la plataforma: si una pieza no empuja ninguna de esas señales, cámbiala.",
       "Quemado, no usar: prohibido. Si una idea cae ahí, descártala sin avisarme.",
@@ -227,7 +248,7 @@ function estrategia(ctx: PromptContext): string {
       "## Estrategia de venta",
       bullets([
         "Estamos en campaña: hay algo concreto para vender, arriba en Oferta.",
-        "No todas las piezas venden. En cada bloque semanal te voy a marcar cuáles llevan llamada a la acción de venta y cuáles no. Respétalo.",
+        "No todas las piezas venden. En cada bloque te voy a marcar cuáles llevan llamada a la acción de venta y cuáles no. Respétalo.",
         "Cada objeción de «Objeciones frecuentes» queda desarmada por al menos una pieza del plan, sin nombrarla como objeción: se desarma mostrando, no discutiendo.",
         "Usa «Prueba social disponible» tal cual está. No la infles, no la redondees y no le agregues testimonios nuevos.",
         "Una llamada a la acción por pieza, una sola acción, específica: qué hace la persona, dónde, y qué pasa después.",
@@ -249,7 +270,7 @@ function estrategia(ctx: PromptContext): string {
 function planGeneral(ctx: PromptContext): string {
   return [
     "## Plan general",
-    `El plan es de ${ctx.duracionEtiqueta}, partido en ${ctx.totalSemanas} bloques semanales. Te los voy a pasar de a uno, en mensajes separados, en esta misma conversación. Nunca me des más de un bloque por vez, aunque yo te lo pida sin querer: si te pido dos semanas juntas, haz solo la primera y avísame.`,
+    `El plan es de ${ctx.duracionEtiqueta}, partido en ${ctx.tipoDeKit === "youtube_largo" ? `${ctx.totalVideos} videos` : `${ctx.totalSemanas} bloques semanales`}. Te los voy a pasar de a uno, en mensajes separados, en esta misma conversación. Nunca me des más de un bloque por vez, aunque yo te lo pida sin querer: si te pido dos bloques juntos, haz solo la primera y avísame.`,
   ].join("\n");
 }
 
@@ -270,7 +291,7 @@ function instruccionesFinales(ctx: PromptContext): string {
     `3. **Clichés prohibidos de este nicho:** tres frases o formatos concretos, propios de ${ctx.answers.nicho}, que se usan hasta el cansancio y que te vas a prohibir durante todo el plan. Específicos del nicho, no genéricos.`,
     "4. **Preguntas:** dos como máximo, y solo si hay algo que de verdad te impide trabajar. Si no tienes dudas reales, escribe «Ninguna».",
     "",
-    "Después de eso, paras y esperas. Yo te paso el bloque de la Semana 1.",
+    `Después de eso, paras y esperas. Yo te paso el primer bloque: ${ctx.tipoDeKit === "youtube_largo" ? "el par título/miniatura del Video 1" : "el banco de ángulos de la Semana 1"}.`,
   ].join("\n");
 }
 
@@ -321,7 +342,7 @@ function continuidad(semana: number): string | null {
 
   return [
     "## Continuidad",
-    `Mira el bloque "Memoria" con el que cerraste la Semana ${semana - 1}. No repitas ninguno de esos ganchos, ángulos ni ejemplos. Esta semana avanza sobre la anterior, no la recicla.`,
+    `Mira el bloque de estado con el que cerraste la Semana ${semana - 1}. No repitas ninguno de esos ganchos, ángulos ni ejemplos. Esta semana avanza sobre la anterior, no la recicla.`,
   ].join("\n");
 }
 
@@ -376,44 +397,10 @@ function formatoDeSalida(
     "",
     "Termina con este bloque, literal:",
     "",
-    "### Memoria",
-    "- Ganchos usados: …",
-    "- Ángulos ya quemados: …",
-    "- Qué queda pendiente para la semana que viene: …",
+    bloqueDeEstado(SALIDA),
   ]);
 }
 
-function controlDeCalidad(ctx: PromptContext): string {
-  const noVender =
-    ctx.answers.objetivo === "autoridad"
-      ? "¿Alguna pieza termina vendiendo algo? Reescríbela."
-      : null;
-  const equipoListado = ctx.equipos
-    .map((e) => `«${e.label.toLowerCase()}»`)
-    .join(" o ");
-  const estructuraMezclada =
-    ctx.formatos.length > 1
-      ? "¿Alguna pieza mezcla campos de dos formatos distintos? Corrígela para que use solo la estructura del formato que declaró."
-      : null;
-
-  return lines([
-    "## Antes de responder, verifica",
-    bullets(
-      [
-        `¿Hay exactamente ${ctx.piezasPorSemanaLabel}?`,
-        "¿Alguna arranca presentando la pieza, o con una fórmula prohibida? Reescríbela.",
-        "¿Dos ganchos empiezan con la misma estructura sintáctica? Cambia uno.",
-        "¿Alguna pieza pasa la prueba del reemplazo, es decir, podría ser de cualquier otro nicho? Reescríbela.",
-        `¿Alguna pieza necesita más de «${ctx.tiempoPorPiezaLabel.toLowerCase()}» por pieza, o más equipo del disponible (${equipoListado})? Simplifícala.`,
-        estructuraMezclada,
-        "¿Inventaste algún dato, cifra o testimonio? Cámbialo por [DATO A COMPLETAR: …].",
-        "¿Usaste alguno de los tres clichés que tú mismo te prohibiste al principio?",
-        noVender,
-      ].filter(present)
-    ),
-    "Corrige en silencio lo que falle antes de mandarme la respuesta. No me muestres esta verificación.",
-  ]);
-}
 
 function siTeQuedasSinEspacio(): string {
   return [
@@ -423,13 +410,8 @@ function siTeQuedasSinEspacio(): string {
   ].join("\n");
 }
 
-function buildSemana(ctx: PromptContext, semana: number): string {
-  const mision = ctx.misiones[semana - 1];
-  if (!mision) {
-    throw new Error(
-      `No hay misión definida para la semana ${semana} de un plan de ${ctx.totalSemanas} semanas.`
-    );
-  }
+function buildGuiones(ctx: PromptContext, semana: number): string {
+  const mision = misionDeSemana(ctx, semana);
 
   return sections([
     `# Bloque semanal ${semana} de ${ctx.totalSemanas}`,
@@ -439,7 +421,7 @@ function buildSemana(ctx: PromptContext, semana: number): string {
     continuidad(semana),
     antesDeEscribir(ctx),
     formatoDeSalida(ctx, semana, mision),
-    controlDeCalidad(ctx),
+    verificacionDeLaSemana(ctx.answers.nicho, ctx.formatos.length > 1, SALIDA),
     siTeQuedasSinEspacio(),
   ]);
 }
@@ -534,6 +516,36 @@ function verificacionDelVideo(ctx: PromptContext): string {
   ]);
 }
 
+
+/** La misión de la tanda, con el mismo guard que usa el bloque de video. */
+function misionDeSemana(ctx: PromptContext, semana: number): MisionDeTanda {
+  const mision = ctx.misiones[semana - 1];
+  if (!mision) {
+    throw new Error(
+      `No hay misión definida para la semana ${semana} de un plan de ${ctx.totalSemanas} semanas.`
+    );
+  }
+  return mision;
+}
+
+function buildAngulos(ctx: PromptContext, semana: number): string {
+  const mision = misionDeSemana(ctx, semana);
+
+  return sections([
+    `# Semana ${semana} de ${ctx.totalSemanas} — banco de ángulos`,
+    "**Antes que nada: No escribas guiones todavía. En este turno solo se idea.** Seguimos en la misma conversación, con el mismo contexto del primer mensaje. No lo repitas ni lo resumas.",
+    semana > 1 ? resultadosDeLaSemanaAnterior(semana, SALIDA) : null,
+    ["## Misión de la semana", mision.mision].join("\n"),
+    lines([
+      "## Formato de salida",
+      "Dame 12 ángulos, uno por línea, en este formato exacto:",
+      "",
+      formatoDeAngulos(SALIDA),
+    ]),
+    lines(["## Cierre", "Después de los 12, marca los 3 que tú escogerías y por qué, en una línea cada uno. Y para ahí: yo elijo los 3 definitivos y te los digo. **No escribas guiones en esta respuesta.**"]),
+  ]);
+}
+
 export const chatgptAdapter: PromptAdapter = {
   build: (ctx, req) => {
     // `switch` con rama por defecto imposible, y no un ternario: cuando entre
@@ -542,8 +554,10 @@ export const chatgptAdapter: PromptAdapter = {
     switch (req.kind) {
       case "setup":
         return buildSetup(ctx);
-      case "semana":
-        return buildSemana(ctx, req.semana);
+      case "angulos":
+        return buildAngulos(ctx, req.semana);
+      case "guiones":
+        return buildGuiones(ctx, req.semana);
       case "par_titulo":
         return buildParTitulo(ctx, req.video);
       case "guion_largo":

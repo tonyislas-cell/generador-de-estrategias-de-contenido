@@ -28,7 +28,8 @@ export const DURACION_OPTIONS: Option<Duracion>[] = (
 
 export type PromptBlockKind =
   | "setup"
-  | "semana"
+  | "angulos"
+  | "guiones"
   | "par_titulo"
   | "guion_largo";
 

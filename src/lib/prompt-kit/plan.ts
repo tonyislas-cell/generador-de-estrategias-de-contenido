@@ -13,7 +13,8 @@ import { DURACION_CONFIG, type Duracion } from "./types";
 export type BloqueRequest =
   | { kind: "setup" }
   /** `semana` es 1-based. */
-  | { kind: "semana"; semana: number }
+  | { kind: "angulos"; semana: number }
+  | { kind: "guiones"; semana: number }
   /** `video` es 1-based. */
   | { kind: "par_titulo"; video: number }
   | { kind: "guion_largo"; video: number };
@@ -50,10 +51,17 @@ export function planDeBloques(
     ];
   }
 
+  // Dos bloques por semana: idear y escribir son turnos separados. El primero
+  // se detiene con doce ángulos sobre la mesa y espera a que el creador elija
+  // tres — los mejores 3 de 12 le ganan a los primeros 3, y ese filtro es el
+  // único punto donde entra criterio humano en todo el plan.
   return [
     { kind: "setup" },
-    ...rango(DURACION_CONFIG[duracion].semanas).map(
-      (semana): BloqueRequest => ({ kind: "semana", semana })
+    ...rango(DURACION_CONFIG[duracion].semanas).flatMap(
+      (semana): BloqueRequest[] => [
+        { kind: "angulos", semana },
+        { kind: "guiones", semana },
+      ]
     ),
   ];
 }

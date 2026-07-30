@@ -93,49 +93,61 @@ function buildKit(
 /** El setup es siempre el primero — invariante de `generatePromptKit`. */
 const setupDe = (kit: PromptKit): PromptBlock => kit.bloques[0];
 const semanasDe = (kit: PromptKit): PromptBlock[] => kit.bloques.slice(1);
+const angulosDe = (kit: PromptKit, semana = 1): string =>
+  kit.bloques.find((b) => b.id === `semana-${semana}-angulos`)?.contenido ?? "";
+const guionesDe = (kit: PromptKit, semana = 1): string =>
+  kit.bloques.find((b) => b.id === `semana-${semana}-guiones`)?.contenido ?? "";
 
 const textoCompleto = (kit: PromptKit): string =>
   kit.bloques.map((bloque) => bloque.contenido).join("\n");
 
 describe("generatePromptKit", () => {
-  it("produces one setup block and two weekly blocks for a 14-day plan", () => {
+  it("splits each week into an angles block and a scripts block", () => {
     const kit = buildKit();
 
     expect(setupDe(kit).kind).toBe("setup");
-    expect(semanasDe(kit)).toHaveLength(2);
-    expect(kit.bloques).toHaveLength(3);
+    expect(kit.bloques.map((bloque) => bloque.kind)).toEqual([
+      "setup",
+      "angulos",
+      "guiones",
+      "angulos",
+      "guiones",
+    ]);
   });
 
-  it("produces four weekly blocks for a one-month plan", () => {
+  it("produces nine blocks for a one-month plan: setup plus two per week", () => {
     const kit = buildKit({}, "1_mes");
 
-    expect(semanasDe(kit)).toHaveLength(4);
-    expect(kit.bloques).toHaveLength(5);
+    expect(kit.bloques).toHaveLength(9);
+    expect(semanasDe(kit).map((bloque) => bloque.grupo?.numero)).toEqual([
+      1, 1, 2, 2, 3, 3, 4, 4,
+    ]);
   });
 
   it("numbers and orders the weekly blocks starting at week one", () => {
     const kit = buildKit({}, "1_mes");
 
-    expect(semanasDe(kit).map((bloque) => bloque.grupo?.numero)).toEqual([
-      1, 2, 3, 4,
-    ]);
     expect(semanasDe(kit).map((bloque) => bloque.id)).toEqual([
-      "semana-1",
-      "semana-2",
-      "semana-3",
-      "semana-4",
+      "semana-1-angulos",
+      "semana-1-guiones",
+      "semana-2-angulos",
+      "semana-2-guiones",
+      "semana-3-angulos",
+      "semana-3-guiones",
+      "semana-4-angulos",
+      "semana-4-guiones",
     ]);
   });
 
   it("numbers the block titles by paste order, which is what the user follows", () => {
-    const kit = buildKit({}, "1_mes");
+    const kit = buildKit();
 
     expect(kit.bloques.map((bloque) => bloque.titulo)).toEqual([
       "Prompt 1 — Configuración",
-      "Prompt 2 — Semana 1",
-      "Prompt 3 — Semana 2",
-      "Prompt 4 — Semana 3",
-      "Prompt 5 — Semana 4",
+      "Prompt 2 — Semana 1 · Ángulos",
+      "Prompt 3 — Semana 1 · Guiones",
+      "Prompt 4 — Semana 2 · Ángulos",
+      "Prompt 5 — Semana 2 · Guiones",
     ]);
   });
 
@@ -145,8 +157,45 @@ describe("generatePromptKit", () => {
     expect(setupDe(kit).grupo).toBeUndefined();
     expect(semanasDe(kit).map((bloque) => bloque.grupo)).toEqual([
       { unidad: "semana", numero: 1 },
+      { unidad: "semana", numero: 1 },
+      { unidad: "semana", numero: 2 },
       { unidad: "semana", numero: 2 },
     ]);
+  });
+
+  it("keeps the angles block from writing scripts, which is the whole point of the split", () => {
+    const kit = buildKit();
+    const angulos = angulosDe(kit);
+
+    expect(angulos).toContain("12 ángulos");
+    expect(angulos).toContain("No escribas guiones todavía");
+    expect(angulos).not.toContain("Dirección de cámara");
+    expect(angulos).not.toContain("Tabla de beats");
+  });
+
+  it("asks the scripts block for three hooks, a beats table and a close type", () => {
+    const guiones = guionesDe(buildKit());
+
+    expect(guiones).toContain("Tres ganchos, palabra por palabra");
+    expect(guiones).toContain("Tabla de beats");
+    expect(guiones).toContain("El segundo 5");
+    expect(guiones).toContain("Tipo de cierre");
+    expect(guiones).toContain("Palabra clave, en las tres capas");
+    expect(guiones).toContain("Delta por red");
+    expect(guiones).not.toContain("12 ángulos");
+  });
+
+  it("prints the verification instead of running it in silence", () => {
+    const guiones = guionesDe(buildKit());
+
+    expect(guiones).toContain("Imprime esta tabla");
+  });
+
+  it("only asks for last week's numbers from the second week onward", () => {
+    const kit = buildKit();
+
+    expect(angulosDe(kit, 1)).not.toContain("resultados_semana_anterior");
+    expect(angulosDe(kit, 2)).toContain("La peor pieza fue");
   });
 
   it("includes contextoMarca in the setup when provided, and nothing extra when it's absent", () => {
@@ -184,7 +233,7 @@ describe("generatePromptKit", () => {
 
   it("lists every selected equipo level, not just one, in the weekly hard constraints", () => {
     const kit = buildKit({ equipo: ["solo", "con_editor"] });
-    const semana1 = semanasDe(kit)[0]?.contenido ?? "";
+    const semana1 = guionesDe(kit);
 
     expect(semana1).toContain("solo yo");
     expect(semana1).toContain("con editor");
@@ -253,7 +302,7 @@ describe("generatePromptKit", () => {
 
   it("gives every selected formato its own piece skeleton in the weekly block", () => {
     const kit = buildKit({ formato: ["camara", "texto_carrusel"] });
-    const semana1 = semanasDe(kit)[0]?.contenido ?? "";
+    const semana1 = guionesDe(kit);
 
     expect(semana1).toContain("Dirección de cámara");
     expect(semana1).toContain("Lámina 1");
@@ -266,17 +315,15 @@ describe("generatePromptKit", () => {
     // `**Formato:**` (bold) is the skeleton's own field, distinct from the
     // plain "Formato: Cámara." that restriccionesDuras always includes.
     expect(textoCompleto(single)).not.toContain("**Formato:**");
-    expect((semanasDe(multi)[0]?.contenido ?? "")).toContain("**Formato:** Cámara");
-    expect((semanasDe(multi)[0]?.contenido ?? "")).toContain(
-      "**Formato:** Texto / carrusel"
-    );
+    expect(guionesDe(multi)).toContain("**Formato:** Cámara");
+    expect(guionesDe(multi)).toContain("**Formato:** Texto / carrusel");
   });
 
   it("only relaxes the formato hard-constraint line, and only adds the mixed-structure quality check, when more than one formato is selected", () => {
     const single = buildKit({ formato: ["camara"] });
     const multi = buildKit({ formato: ["camara", "texto_carrusel"] });
-    const semana1Single = semanasDe(single)[0]?.contenido ?? "";
-    const semana1Multi = semanasDe(multi)[0]?.contenido ?? "";
+    const semana1Single = guionesDe(single);
+    const semana1Multi = guionesDe(multi);
 
     expect(semana1Single).toContain("Formato: Cámara.");
     expect(semana1Single).not.toContain("mezcla campos");
@@ -340,12 +387,45 @@ describe("generatePromptKit", () => {
 
   it("gives each week a distinct mission and only asks later weeks for continuity", () => {
     const kit = buildKit();
-    const [semana1, semana2] = semanasDe(kit);
 
-    expect(semana1?.contenido).not.toBe(semana2?.contenido);
-    expect(semana1?.contenido).not.toContain("<continuidad>");
-    expect(semana2?.contenido).toContain("<continuidad>");
-    expect(semana2?.contenido).toContain("cerraste la Semana 1");
+    expect(guionesDe(kit, 1)).not.toBe(guionesDe(kit, 2));
+    expect(guionesDe(kit, 1)).not.toContain("<continuidad>");
+    expect(guionesDe(kit, 2)).toContain("<continuidad>");
+    expect(guionesDe(kit, 2)).toContain("cerraste la Semana 1");
+  });
+
+  it("produces a YouTube long-form kit that never mentions weeks", () => {
+    const kit = buildKit(
+      { tipoDeKit: "youtube_largo", plataformas: ["youtube_largo"] },
+      "1_mes"
+    );
+
+    expect(kit.bloques).toHaveLength(5);
+    expect(kit.bloques.map((bloque) => bloque.kind)).toEqual([
+      "setup",
+      "par_titulo",
+      "guion_largo",
+      "par_titulo",
+      "guion_largo",
+    ]);
+    expect(textoCompleto(kit)).not.toContain("Semana");
+    expect(textoCompleto(kit)).not.toContain("piezas. Ni una más");
+  });
+
+  it("asks for the title/thumbnail pair before the script, and stops in between", () => {
+    const kit = buildKit(
+      { tipoDeKit: "youtube_largo", plataformas: ["youtube_largo"] },
+      "14_dias"
+    );
+    const [, par, guion] = kit.bloques;
+
+    expect(par.contenido).toContain("Dame 5 pares");
+    expect(par.contenido).toContain("Texto en miniatura");
+    expect(par.contenido).not.toContain("Tomas de apoyo");
+
+    expect(guion.contenido).toContain("Tomas de apoyo");
+    expect(guion.contenido).toContain("Derivados verticales");
+    expect(guion.contenido).not.toContain("Dame 5 pares");
   });
 
   it("asks secondary platforms for an adaptation block only when more than one was chosen", () => {

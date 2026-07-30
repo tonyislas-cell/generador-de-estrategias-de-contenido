@@ -69,8 +69,10 @@ describe("PromptKitResult", () => {
 
     expect(titulos).toEqual([
       "Prompt 1 — Configuración",
-      "Prompt 2 — Semana 1",
-      "Prompt 3 — Semana 2",
+      "Prompt 2 — Semana 1 · Ángulos",
+      "Prompt 3 — Semana 1 · Guiones",
+      "Prompt 4 — Semana 2 · Ángulos",
+      "Prompt 5 — Semana 2 · Guiones",
     ]);
   });
 
@@ -90,13 +92,9 @@ describe("PromptKitResult", () => {
       await screen.findAllByRole("heading", { level: 3 })
     ).map((heading) => heading.textContent);
 
-    expect(titulos).toEqual([
-      "Prompt 1 — Configuración",
-      "Prompt 2 — Semana 1",
-      "Prompt 3 — Semana 2",
-      "Prompt 4 — Semana 3",
-      "Prompt 5 — Semana 4",
-    ]);
+    expect(titulos).toHaveLength(9);
+    expect(titulos[0]).toBe("Prompt 1 — Configuración");
+    expect(titulos[8]).toBe("Prompt 9 — Semana 4 · Guiones");
     expect(await screen.findByRole("banner")).toHaveTextContent(
       "Plan de 1 mes · TikTok"
     );
@@ -137,7 +135,7 @@ describe("PromptKitResult", () => {
 
     expect(
       await screen.findAllByRole("button", { name: "Copiar" })
-    ).toHaveLength(3);
+    ).toHaveLength(5);
   });
 
   it("names the platform in the header, without picking a single model", async () => {

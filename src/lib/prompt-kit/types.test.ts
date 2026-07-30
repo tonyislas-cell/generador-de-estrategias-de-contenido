@@ -12,7 +12,7 @@ function bloque(
 ): PromptBlock {
   return {
     id,
-    kind: grupo ? "semana" : "setup",
+    kind: grupo ? "guiones" : "setup",
     grupo,
     titulo: id,
     descripcion: "",
