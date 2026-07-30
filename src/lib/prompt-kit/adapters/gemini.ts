@@ -117,6 +117,38 @@ function capacidadDeProduccion(ctx: PromptContext): string {
   ]);
 }
 
+/**
+ * Cómo funciona la plataforma, separado de qué está rindiendo.
+ *
+ * Va antes de las tendencias porque las mecánicas restringen y las tendencias
+ * inspiran: primero el marco, después las ideas.
+ */
+function mecanicaDePlataforma(ctx: PromptContext): string {
+  const { mecanica } = ctx;
+
+  const confirmado =
+    mecanica.confirmado.length > 0
+      ? lines([
+          "Confirmado por la plataforma:",
+          bullets(mecanica.confirmado.map((d) => `${d.etiqueta}: ${d.valor}`)),
+        ])
+      : `Confirmado por la plataforma: nada. No tengo mecánicas verificadas de ${ctx.plataformaPrincipalLabel}, así que cualquier afirmación sobre cómo funciona esta plataforma va marcada [NO VERIFICADO].`;
+
+  const discutido =
+    mecanica.discutido.length > 0
+      ? lines([
+          "Discutido, no documentado. Esto circula en guías de marketing y la plataforma no lo documenta. Puedes tenerlo en cuenta para decidir, pero está prohibido afirmarlo como mecánica o construir una instrucción sobre eso:",
+          bullets(mecanica.discutido),
+        ])
+      : null;
+
+  return lines([
+    `**Cómo funciona ${ctx.plataformaPrincipalLabel}, revisado el ${mecanica.revisada}:**`,
+    confirmado,
+    discutido,
+  ]);
+}
+
 function tendencias(ctx: PromptContext): string {
   const { trends } = ctx;
 
@@ -157,6 +189,7 @@ function reglasDeEscritura(ctx: PromptContext): string {
     "Regla 5 — Escribe como hablo yo: mira el registro y el nivel de formalidad de mis respuestas más arriba, e imítalo sin neutralizarlo.",
     "Regla 6 — Sin relleno: si una frase no agrega información nueva o tensión nueva, bórrala.",
     "Regla 7 — No inventes datos, cifras, estudios ni testimonios que no te haya dado yo. Si un guion necesita un dato, deja [DATO A COMPLETAR: qué necesito] y sigue.",
+    "Regla 8 — No inventes mecánicas de plataforma. Nunca afirmes un dato sobre cómo funciona la plataforma —topes, duraciones, señales, medidas, umbrales— que no esté en la sección de cómo funciona, de arriba. Si no está ahí, escribe [NO VERIFICADO] al lado de la afirmación y sigue. Lo que está marcado como discutido no se afirma como mecánica.",
   ].join("\n");
 }
 
@@ -228,6 +261,7 @@ function buildSetup(ctx: PromptContext): string {
     plataformasSecundarias(ctx),
     oferta(ctx),
     capacidadDeProduccion(ctx),
+    mecanicaDePlataforma(ctx),
     tendencias(ctx),
     comoUsarLasTendencias(ctx),
     reglasDeEscritura(ctx),

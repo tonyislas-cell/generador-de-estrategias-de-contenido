@@ -10,6 +10,7 @@ import { getKitUsageTotal } from "@/lib/usage";
 import * as contenido from "@/lib/landing/content";
 import { DONACION, HERO } from "@/lib/landing/content";
 import { getMisiones } from "@/lib/prompt-kit/misiones";
+import { conVoseo } from "@/test-support/voseo";
 import Home from "./page";
 
 const mockGetKitUsageTotal = getKitUsageTotal as Mock;
@@ -117,32 +118,6 @@ describe("Home", () => {
  * lo que atrapa este tipo de error en la práctica.
  */
 describe("landing copy stays in tuteo", () => {
-  const VOSEO = [
-    // Presente de indicativo
-    /\bsos\b/i,
-    /\bvos\b/i,
-    /\btenés\b/i,
-    /\bpodés\b/i,
-    /\bquerés\b/i,
-    /\bsabés\b/i,
-    /\bhacés\b/i,
-    /\bvenís\b/i,
-    /\belegís\b/i,
-    /\bescribís\b/i,
-    // Imperativo con pronombre enclítico, que en voseo pierde la tilde
-    /\binvitame\b/i,
-    /\bgenerame\b/i,
-    /\bcontame\b/i,
-    /\bmirame\b/i,
-    /\bdecime\b/i,
-    /\bfijate\b/i,
-    // Imperativo suelto
-    /\bmirá\b/i,
-    /\bhacé\b/i,
-    /\bponé\b/i,
-    /\bempezá\b/i,
-    /\belegí\b/i,
-  ];
 
   /** Aplana el módulo de copy a la lista de cadenas que el usuario llega a leer. */
   function cadenas(valor: unknown): string[] {
@@ -158,7 +133,6 @@ describe("landing copy stays in tuteo", () => {
     // Si el aplanado devolviera nada, el test pasaría sin mirar nada.
     expect(todas.length).toBeGreaterThan(30);
 
-    const infractoras = todas.filter((s) => VOSEO.some((v) => v.test(s)));
-    expect(infractoras).toEqual([]);
+    expect(conVoseo(todas)).toEqual([]);
   });
 });

@@ -12,6 +12,10 @@ import {
   piezasLabel,
 } from "./descriptors";
 import { getMisiones, type MisionSemana } from "./misiones";
+import {
+  MECANICA_POR_PLATAFORMA,
+  type MecanicaPlataforma,
+} from "./plataforma-mecanica";
 import type { KitAnswers } from "./kit-answers";
 import { DURACION_CONFIG, type Duracion } from "./types";
 
@@ -33,6 +37,8 @@ export interface PromptContext {
   plataformaPrincipal: Plataforma;
   plataformaPrincipalLabel: string;
   plataformasSecundariasLabels: string[];
+  /** Cómo funciona la plataforma: lo duro, con fecha. Distinto de `trends`, que es lo blando. */
+  mecanica: MecanicaPlataforma;
 
   // Los campos `*Label` guardan el texto que vio el usuario, no el valor crudo.
   tonoLabel: string;
@@ -81,6 +87,7 @@ export function buildContext(
     plataformasSecundariasLabels: answers.plataformas
       .filter((p) => p !== plataformaPrincipal)
       .map(labels.plataformaLabel),
+    mecanica: MECANICA_POR_PLATAFORMA[plataformaPrincipal],
 
     tonoLabel: labels.tonoLabel(answers.tono),
     tonoDescriptor: TONO_DESCRIPTOR[answers.tono],

@@ -126,6 +126,42 @@ function capacidadDeProduccion(ctx: PromptContext): string {
   ]);
 }
 
+/**
+ * Cómo funciona la plataforma, separado de qué está rindiendo.
+ *
+ * Va antes de `<tendencias_de_plataforma>` porque las mecánicas restringen y
+ * las tendencias inspiran: primero el marco, después las ideas.
+ */
+function mecanicaDePlataforma(ctx: PromptContext): string {
+  const { mecanica } = ctx;
+
+  const confirmado =
+    mecanica.confirmado.length > 0
+      ? lines([
+          "<confirmado>",
+          bullets(mecanica.confirmado.map((d) => `${d.etiqueta}: ${d.valor}`)),
+          "</confirmado>",
+        ])
+      : `<confirmado>No tengo mecánicas verificadas de ${ctx.plataformaPrincipalLabel}. Cualquier afirmación sobre cómo funciona esta plataforma va marcada [NO VERIFICADO].</confirmado>`;
+
+  const discutido =
+    mecanica.discutido.length > 0
+      ? lines([
+          "<discutido>",
+          "Esto circula en guías de marketing y no está documentado por la plataforma. Puedes tenerlo en cuenta para decidir, pero está prohibido afirmarlo como mecánica o construir una instrucción sobre eso:",
+          bullets(mecanica.discutido),
+          "</discutido>",
+        ])
+      : null;
+
+  return lines([
+    `<mecanica_de_plataforma plataforma="${ctx.plataformaPrincipalLabel}" revisada="${mecanica.revisada}">`,
+    confirmado,
+    discutido,
+    "</mecanica_de_plataforma>",
+  ]);
+}
+
 function tendencias(ctx: PromptContext): string {
   const { trends } = ctx;
 
@@ -173,6 +209,7 @@ function reglasDeEscritura(ctx: PromptContext): string {
     "5. Escribe como hablo yo. Mira cómo escribí mis respuestas más arriba: registro, nivel de formalidad, si trato de tú o de usted. Imítalo. No lo neutralices.",
     "6. Sin relleno. Si una frase no agrega información nueva o tensión nueva, bórrala. En formato corto, cada segundo que no aporta cuesta retención.",
     "7. No inventes datos. Ni cifras, ni estudios, ni casos, ni testimonios que no te haya dado yo. Si un guion necesita un dato, deja [DATO A COMPLETAR: qué necesito] y sigue.",
+    "8. No inventes mecánicas de plataforma. Nunca afirmes un dato sobre cómo funciona la plataforma —topes, duraciones, señales, medidas, umbrales— que no esté en <mecanica_de_plataforma>. Si no está ahí, escribe [NO VERIFICADO] al lado de la afirmación y sigue. Lo que está en <discutido> no se afirma como mecánica.",
     "</reglas_de_escritura>",
   ].join("\n");
 }
@@ -262,6 +299,7 @@ function buildSetup(ctx: PromptContext): string {
     plataformasSecundarias(ctx),
     oferta(ctx),
     capacidadDeProduccion(ctx),
+    mecanicaDePlataforma(ctx),
     tendencias(ctx),
     comoUsarLasTendencias(ctx),
     reglasDeEscritura(ctx),
