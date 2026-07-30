@@ -481,4 +481,7 @@ function buildSemana(ctx: PromptContext, semana: number): string {
   ]);
 }
 
-export const claudeAdapter: PromptAdapter = { buildSetup, buildSemana };
+export const claudeAdapter: PromptAdapter = {
+  build: (ctx, req) =>
+    req.kind === "setup" ? buildSetup(ctx) : buildSemana(ctx, req.semana),
+};

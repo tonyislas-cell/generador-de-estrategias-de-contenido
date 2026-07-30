@@ -9,6 +9,7 @@ import { incrementKitUsage } from "@/lib/usage";
 import { generatePromptKit } from "@/lib/prompt-kit/generatePromptKit";
 import { resolvePlataformaPrincipal, toKitAnswers } from "@/lib/prompt-kit/kit-answers";
 import {
+  agruparBloques,
   DURACION_CONFIG,
   type Duracion,
   type ModeloIA,
@@ -33,7 +34,25 @@ interface PromptKitResultProps {
   onRestart: () => void;
 }
 
+/**
+ * Es un `h2` por jerarquía del documento, pero visualmente es un eyebrow:
+ * `typography.md` los define en la sans a 12px, así que lleva `font-sans`
+ * explícito para no heredar el serif de titular.
+ */
+function Eyebrow({ children }: { children: string }) {
+  return (
+    <h2 className="font-sans text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
+      {children}
+    </h2>
+  );
+}
+
 function KitPanel({ kit }: { kit: PromptKit }) {
+  // Una región por tanda, y no una sola lista de bloques: con varios bloques
+  // por semana, una región indiferenciada no le dice nada a quien navega por
+  // puntos de referencia.
+  const { setup, tandas } = agruparBloques(kit);
+
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -46,23 +65,22 @@ function KitPanel({ kit }: { kit: PromptKit }) {
       </div>
 
       <section className="grid gap-3" aria-label="Prompt de configuración">
-        {/* Es un `h2` por jerarquía del documento, pero visualmente es un
-            eyebrow: `typography.md` los define en la sans a 12px, así que
-            lleva `font-sans` explícito para no heredar el serif de titular. */}
-        <h2 className="font-sans text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-          Configuración
-        </h2>
-        <PromptBlockCard block={kit.setup} />
+        <Eyebrow>Configuración</Eyebrow>
+        <PromptBlockCard block={setup} />
       </section>
 
-      <section className="grid gap-3" aria-label="Bloques semanales">
-        <h2 className="font-sans text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-          Bloques semanales
-        </h2>
-        {kit.semanas.map((bloque) => (
-          <PromptBlockCard key={bloque.id} block={bloque} />
-        ))}
-      </section>
+      {tandas.map((tanda) => (
+        <section
+          key={tanda.etiqueta}
+          className="grid gap-3"
+          aria-label={tanda.etiqueta}
+        >
+          <Eyebrow>{tanda.etiqueta}</Eyebrow>
+          {tanda.bloques.map((bloque) => (
+            <PromptBlockCard key={bloque.id} block={bloque} />
+          ))}
+        </section>
+      ))}
     </div>
   );
 }

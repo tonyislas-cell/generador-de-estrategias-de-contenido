@@ -2,12 +2,37 @@ import type { TrendsSnippet } from "@/lib/trends/types";
 import { ADAPTERS } from "./adapters";
 import { buildContext } from "./context";
 import type { KitAnswers } from "./kit-answers";
-import { DURACION_CONFIG, type Duracion, type ModeloIA, type PromptBlock, type PromptKit } from "./types";
+import { planDeBloques, type BloqueRequest } from "./plan";
+import type { Duracion, ModeloIA, PromptBlock, PromptKit } from "./types";
 
-function descripcionDeSemana(semana: number): string {
-  return semana === 1
-    ? "Pégalo después de que el modelo confirme el contexto, en la misma conversación."
-    : `Pégalo cuando ya tengas los guiones de la Semana ${semana - 1}, en la misma conversación.`;
+/** Todo lo que define un bloque menos su contenido, que lo escribe el adaptador. */
+type Ficha = Pick<PromptBlock, "id" | "kind" | "grupo" | "descripcion"> & {
+  /** Sin el «Prompt N —» de adelante, que depende de la posición en el kit. */
+  nombre: string;
+};
+
+function fichaDe(req: BloqueRequest): Ficha {
+  if (req.kind === "setup") {
+    return {
+      id: "setup",
+      kind: "setup",
+      nombre: "Configuración",
+      descripcion:
+        "Pégalo primero, en una conversación nueva. El modelo va a confirmar el contexto y esperar. Todavía no te va a dar guiones: eso es a propósito.",
+    };
+  }
+
+  const { semana } = req;
+  return {
+    id: `semana-${semana}`,
+    kind: "semana",
+    grupo: { unidad: "semana", numero: semana, etiqueta: `Semana ${semana}` },
+    nombre: `Semana ${semana}`,
+    descripcion:
+      semana === 1
+        ? "Pégalo después de que el modelo confirme el contexto, en la misma conversación."
+        : `Pégalo cuando ya tengas los guiones de la Semana ${semana - 1}, en la misma conversación.`,
+  };
 }
 
 /**
@@ -17,6 +42,10 @@ function descripcionDeSemana(semana: number): string {
  * fragmento de tendencias entra como parámetro justamente para que el motor no
  * dependa de dónde salen las tendencias, y para que este sea el punto donde se
  * puede probar todo el comportamiento del producto sin montar nada.
+ *
+ * La forma del kit —cuántos bloques y en qué orden— la decide `planDeBloques`;
+ * acá solo se le pone título y descripción a cada uno y se delega el texto al
+ * adaptador del modelo.
  */
 export function generatePromptKit(
   answers: KitAnswers,
@@ -27,26 +56,15 @@ export function generatePromptKit(
   const ctx = buildContext(answers, trendsSnippet, duracion);
   const adapter = ADAPTERS[modelo];
 
-  const setup: PromptBlock = {
-    id: "setup",
-    kind: "setup",
-    titulo: "Prompt 1 — Configuración",
-    descripcion:
-      "Pégalo primero, en una conversación nueva. El modelo va a confirmar el contexto y esperar. Todavía no te va a dar guiones: eso es a propósito.",
-    contenido: adapter.buildSetup(ctx),
-  };
-
-  const semanas: PromptBlock[] = Array.from(
-    { length: DURACION_CONFIG[duracion].semanas },
-    (_, index) => {
-      const semana = index + 1;
+  const [primero, ...resto] = planDeBloques(duracion).map(
+    (req, index): PromptBlock => {
+      const { nombre, ...ficha } = fichaDe(req);
       return {
-        id: `semana-${semana}`,
-        kind: "semana",
-        semana,
-        titulo: `Prompt ${semana + 1} — Semana ${semana}`,
-        descripcion: descripcionDeSemana(semana),
-        contenido: adapter.buildSemana(ctx, semana),
+        ...ficha,
+        // La numeración es posicional: es el orden en que se pegan, y ese es
+        // el único dato que le importa a quien los va a pegar.
+        titulo: `Prompt ${index + 1} — ${nombre}`,
+        contenido: adapter.build(ctx, req),
       };
     }
   );
@@ -55,7 +73,6 @@ export function generatePromptKit(
     modelo,
     duracion,
     plataformaPrincipal: ctx.plataformaPrincipal,
-    setup,
-    semanas,
+    bloques: [primero, ...resto],
   };
 }

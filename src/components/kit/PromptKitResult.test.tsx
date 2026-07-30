@@ -102,7 +102,7 @@ describe("PromptKitResult", () => {
     );
   });
 
-  it("separates the setup block from the weekly blocks", async () => {
+  it("gives the setup and each tanda its own landmark region", async () => {
     mockGetTrendsSnippet.mockResolvedValue(FIXTURE_SNIPPET);
     render(
       <PromptKitResult
@@ -117,9 +117,10 @@ describe("PromptKitResult", () => {
     expect(
       await screen.findByRole("region", { name: "Prompt de configuración" })
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("region", { name: "Bloques semanales" })
-    ).toBeInTheDocument();
+    // Una región por semana, y no una sola lista: quien navega por puntos de
+    // referencia tiene que poder saltar a la semana que le interesa.
+    expect(screen.getByRole("region", { name: "Semana 1" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Semana 2" })).toBeInTheDocument();
   });
 
   it("gives every block its own copy button", async () => {

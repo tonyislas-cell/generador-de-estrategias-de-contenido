@@ -1,6 +1,6 @@
 import { NOMBRE_DE_MODELO } from "./adapters";
 import { plataformaLabel } from "@/lib/wizard/labels";
-import { DURACION_CONFIG, getBloquesEnOrden, type PromptKit } from "./types";
+import { DURACION_CONFIG, type PromptKit } from "./types";
 
 /**
  * Junta todos los bloques de un kit en un único documento Markdown, separados
@@ -14,7 +14,7 @@ export function buildKitMarkdown(kit: PromptKit): string {
     `Plan de ${DURACION_CONFIG[kit.duracion].etiqueta} · ${plataformaLabel(kit.plataformaPrincipal)}`,
   ].join("\n\n");
 
-  const bloques = getBloquesEnOrden(kit).map((bloque) =>
+  const bloques = kit.bloques.map((bloque) =>
     [`## ${bloque.titulo}`, `_${bloque.descripcion}_`, bloque.contenido].join("\n\n")
   );
 

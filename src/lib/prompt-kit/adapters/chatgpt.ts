@@ -458,4 +458,7 @@ function buildSemana(ctx: PromptContext, semana: number): string {
   ]);
 }
 
-export const chatgptAdapter: PromptAdapter = { buildSetup, buildSemana };
+export const chatgptAdapter: PromptAdapter = {
+  build: (ctx, req) =>
+    req.kind === "setup" ? buildSetup(ctx) : buildSemana(ctx, req.semana),
+};

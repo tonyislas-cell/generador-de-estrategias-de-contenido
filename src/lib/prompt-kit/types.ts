@@ -26,12 +26,27 @@ export const DURACION_OPTIONS: Option<Duracion>[] = (
 
 export type PromptBlockKind = "setup" | "semana";
 
+/**
+ * A qué tanda pertenece el bloque.
+ *
+ * Ausente solo en el setup, que es previo a toda tanda. `unidad` existe porque
+ * no todos los kits se organizan por semanas: uno de video largo avanza por
+ * videos, y el rótulo que ve el usuario tiene que decir cuál de las dos cosas
+ * es.
+ */
+export interface PromptGrupo {
+  unidad: "semana";
+  /** 1-based. */
+  numero: number;
+  /** "Semana 1" — el rótulo que ve el usuario. */
+  etiqueta: string;
+}
+
 export interface PromptBlock {
   /** "setup" | "semana-1" | "semana-2" … */
   id: string;
   kind: PromptBlockKind;
-  /** 1-based. Ausente en el bloque de setup. */
-  semana?: number;
+  grupo?: PromptGrupo;
   titulo: string;
   /** Cuándo y cómo pegar este bloque. */
   descripcion: string;
@@ -43,12 +58,39 @@ export interface PromptKit {
   modelo: ModeloIA;
   duracion: Duracion;
   plataformaPrincipal: Plataforma;
-  setup: PromptBlock;
-  semanas: PromptBlock[];
+  /**
+   * En el orden en que se pegan, que es el invariante primario del producto.
+   * Por eso vive en los datos y no se reconstruye aplanando: el agrupamiento
+   * para pantalla se deriva con `agruparBloques`, no al revés.
+   *
+   * El primero siempre es el setup — invariante de `generatePromptKit`.
+   */
+  bloques: [PromptBlock, ...PromptBlock[]];
 }
 
-/** Lista plana en el orden en que se pegan. */
-export const getBloquesEnOrden = (kit: PromptKit): PromptBlock[] => [
-  kit.setup,
-  ...kit.semanas,
-];
+export interface TandaDeBloques {
+  /** "Semana 1" */
+  etiqueta: string;
+  bloques: PromptBlock[];
+}
+
+/** Vista de presentación: el setup aparte, y después una tanda por semana. */
+export function agruparBloques(kit: PromptKit): {
+  setup: PromptBlock;
+  tandas: TandaDeBloques[];
+} {
+  const [setup, ...resto] = kit.bloques;
+  const tandas: TandaDeBloques[] = [];
+
+  for (const bloque of resto) {
+    if (!bloque.grupo) continue;
+    const ultima = tandas.at(-1);
+    if (ultima && ultima.etiqueta === bloque.grupo.etiqueta) {
+      ultima.bloques.push(bloque);
+    } else {
+      tandas.push({ etiqueta: bloque.grupo.etiqueta, bloques: [bloque] });
+    }
+  }
+
+  return { setup, tandas };
+}

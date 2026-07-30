@@ -430,4 +430,7 @@ function buildSemana(ctx: PromptContext, semana: number): string {
   ]);
 }
 
-export const geminiAdapter: PromptAdapter = { buildSetup, buildSemana };
+export const geminiAdapter: PromptAdapter = {
+  build: (ctx, req) =>
+    req.kind === "setup" ? buildSetup(ctx) : buildSemana(ctx, req.semana),
+};

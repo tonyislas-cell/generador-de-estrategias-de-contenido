@@ -9,18 +9,18 @@ const KIT: PromptKit = {
   modelo: "claude",
   duracion: "14_dias",
   plataformaPrincipal: "tiktok",
-  setup: {
-    id: "setup",
-    kind: "setup",
-    titulo: "Prompt 1 — Configuración",
-    descripcion: "Pégalo primero, en una conversación nueva.",
-    contenido: "Contenido del setup.",
-  },
-  semanas: [
+  bloques: [
+    {
+      id: "setup",
+      kind: "setup",
+      titulo: "Prompt 1 — Configuración",
+      descripcion: "Pégalo primero, en una conversación nueva.",
+      contenido: "Contenido del setup.",
+    },
     {
       id: "semana-1",
       kind: "semana",
-      semana: 1,
+      grupo: { unidad: "semana", numero: 1, etiqueta: "Semana 1" },
       titulo: "Prompt 2 — Semana 1",
       descripcion: "Pégalo después de que el modelo confirme el contexto.",
       contenido: "Contenido de la semana 1.",

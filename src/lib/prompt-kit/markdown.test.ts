@@ -7,18 +7,18 @@ function buildKit(overrides: Partial<PromptKit> = {}): PromptKit {
     modelo: "claude",
     duracion: "14_dias",
     plataformaPrincipal: "tiktok",
-    setup: {
-      id: "setup",
-      kind: "setup",
-      titulo: "Prompt 1 — Configuración",
-      descripcion: "Pégalo primero, en una conversación nueva.",
-      contenido: "Contenido del setup de Claude.",
-    },
-    semanas: [
+    bloques: [
+      {
+        id: "setup",
+        kind: "setup",
+        titulo: "Prompt 1 — Configuración",
+        descripcion: "Pégalo primero, en una conversación nueva.",
+        contenido: "Contenido del setup de Claude.",
+      },
       {
         id: "semana-1",
         kind: "semana",
-        semana: 1,
+        grupo: { unidad: "semana", numero: 1, etiqueta: "Semana 1" },
         titulo: "Prompt 2 — Semana 1",
         descripcion: "Pégalo después de que el modelo confirme el contexto.",
         contenido: "Contenido de la semana 1 de Claude.",
@@ -26,7 +26,7 @@ function buildKit(overrides: Partial<PromptKit> = {}): PromptKit {
       {
         id: "semana-2",
         kind: "semana",
-        semana: 2,
+        grupo: { unidad: "semana", numero: 2, etiqueta: "Semana 2" },
         titulo: "Prompt 3 — Semana 2",
         descripcion: "Pégalo cuando ya tengas los guiones de la Semana 1.",
         contenido: "Contenido de la semana 2 de Claude.",
@@ -75,13 +75,16 @@ describe("buildKitMarkdown", () => {
 
   it("does not mix content between kits of different models built from the same answers", () => {
     const claude = buildKit({ modelo: "claude" });
+    const [setup, ...semanas] = claude.bloques;
     const chatgpt = buildKit({
       modelo: "chatgpt",
-      setup: { ...claude.setup, contenido: "Contenido del setup de ChatGPT." },
-      semanas: claude.semanas.map((s, i) => ({
-        ...s,
-        contenido: `Contenido de la semana ${i + 1} de ChatGPT.`,
-      })),
+      bloques: [
+        { ...setup, contenido: "Contenido del setup de ChatGPT." },
+        ...semanas.map((bloque, i) => ({
+          ...bloque,
+          contenido: `Contenido de la semana ${i + 1} de ChatGPT.`,
+        })),
+      ],
     });
 
     const mdClaude = buildKitMarkdown(claude);

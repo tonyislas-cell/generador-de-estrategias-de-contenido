@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { generatePromptKit } from "./generatePromptKit";
-import { getBloquesEnOrden, type Duracion, type ModeloIA, type PromptKit } from "./types";
+import type { Duracion, ModeloIA, PromptBlock, PromptKit } from "./types";
 import { toKitAnswers } from "./kit-answers";
 import type { TrendsSnippet } from "@/lib/trends/types";
 import type { Plataforma, WizardAnswers } from "@/lib/wizard/types";
@@ -81,36 +81,62 @@ function buildKit(
   );
 }
 
+/** El setup es siempre el primero — invariante de `generatePromptKit`. */
+const setupDe = (kit: PromptKit): PromptBlock => kit.bloques[0];
+const semanasDe = (kit: PromptKit): PromptBlock[] => kit.bloques.slice(1);
+
 const textoCompleto = (kit: PromptKit): string =>
-  getBloquesEnOrden(kit)
-    .map((bloque) => bloque.contenido)
-    .join("\n");
+  kit.bloques.map((bloque) => bloque.contenido).join("\n");
 
 describe("generatePromptKit", () => {
   it("produces one setup block and two weekly blocks for a 14-day plan", () => {
     const kit = buildKit();
 
-    expect(kit.setup.kind).toBe("setup");
-    expect(kit.semanas).toHaveLength(2);
-    expect(getBloquesEnOrden(kit)).toHaveLength(3);
+    expect(setupDe(kit).kind).toBe("setup");
+    expect(semanasDe(kit)).toHaveLength(2);
+    expect(kit.bloques).toHaveLength(3);
   });
 
   it("produces four weekly blocks for a one-month plan", () => {
     const kit = buildKit({}, "1_mes");
 
-    expect(kit.semanas).toHaveLength(4);
-    expect(getBloquesEnOrden(kit)).toHaveLength(5);
+    expect(semanasDe(kit)).toHaveLength(4);
+    expect(kit.bloques).toHaveLength(5);
   });
 
   it("numbers and orders the weekly blocks starting at week one", () => {
     const kit = buildKit({}, "1_mes");
 
-    expect(kit.semanas.map((bloque) => bloque.semana)).toEqual([1, 2, 3, 4]);
-    expect(kit.semanas.map((bloque) => bloque.id)).toEqual([
+    expect(semanasDe(kit).map((bloque) => bloque.grupo?.numero)).toEqual([
+      1, 2, 3, 4,
+    ]);
+    expect(semanasDe(kit).map((bloque) => bloque.id)).toEqual([
       "semana-1",
       "semana-2",
       "semana-3",
       "semana-4",
+    ]);
+  });
+
+  it("numbers the block titles by paste order, which is what the user follows", () => {
+    const kit = buildKit({}, "1_mes");
+
+    expect(kit.bloques.map((bloque) => bloque.titulo)).toEqual([
+      "Prompt 1 — Configuración",
+      "Prompt 2 — Semana 1",
+      "Prompt 3 — Semana 2",
+      "Prompt 4 — Semana 3",
+      "Prompt 5 — Semana 4",
+    ]);
+  });
+
+  it("labels every block after the setup with the tanda it belongs to", () => {
+    const kit = buildKit();
+
+    expect(setupDe(kit).grupo).toBeUndefined();
+    expect(semanasDe(kit).map((bloque) => bloque.grupo?.etiqueta)).toEqual([
+      "Semana 1",
+      "Semana 2",
     ]);
   });
 
@@ -122,7 +148,7 @@ describe("generatePromptKit", () => {
     const conContexto = buildKit({
       contextoMarca: "Marca familiar, sin inversores externos.",
     });
-    expect(conContexto.setup.contenido).toContain(
+    expect(setupDe(conContexto).contenido).toContain(
       "Marca familiar, sin inversores externos."
     );
   });
@@ -131,25 +157,25 @@ describe("generatePromptKit", () => {
     const nueva = buildKit({ etapaCuenta: "nueva" });
     const establecida = buildKit({ etapaCuenta: "establecida" });
 
-    expect(nueva.setup.contenido).toContain("sin audiencia todavía");
-    expect(establecida.setup.contenido).not.toContain("sin audiencia todavía");
-    expect(establecida.setup.contenido).toContain("ya tiene audiencia");
-    expect(nueva.setup.contenido).not.toContain("ya tiene audiencia");
+    expect(setupDe(nueva).contenido).toContain("sin audiencia todavía");
+    expect(setupDe(establecida).contenido).not.toContain("sin audiencia todavía");
+    expect(setupDe(establecida).contenido).toContain("ya tiene audiencia");
+    expect(setupDe(nueva).contenido).not.toContain("ya tiene audiencia");
 
-    expect(nueva.semanas).toEqual(establecida.semanas);
+    expect(semanasDe(nueva)).toEqual(semanasDe(establecida));
   });
 
   it("describes every selected equipo level in the setup, and none of the others", () => {
     const kit = buildKit({ equipo: ["solo", "con_editor"] });
 
-    expect(kit.setup.contenido).toContain("se graba, edita y publica sin ayuda");
-    expect(kit.setup.contenido).toContain("hay alguien que edita");
-    expect(kit.setup.contenido).not.toContain("equipo de grabación");
+    expect(setupDe(kit).contenido).toContain("se graba, edita y publica sin ayuda");
+    expect(setupDe(kit).contenido).toContain("hay alguien que edita");
+    expect(setupDe(kit).contenido).not.toContain("equipo de grabación");
   });
 
   it("lists every selected equipo level, not just one, in the weekly hard constraints", () => {
     const kit = buildKit({ equipo: ["solo", "con_editor"] });
-    const semana1 = kit.semanas[0]?.contenido ?? "";
+    const semana1 = semanasDe(kit)[0]?.contenido ?? "";
 
     expect(semana1).toContain("solo yo");
     expect(semana1).toContain("con editor");
@@ -158,8 +184,8 @@ describe("generatePromptKit", () => {
   it("still works with a single equipo level, same as before", () => {
     const kit = buildKit({ equipo: ["solo"] });
 
-    expect(kit.setup.contenido).toContain("se graba, edita y publica sin ayuda");
-    expect(kit.setup.contenido).not.toContain("hay alguien que edita");
+    expect(setupDe(kit).contenido).toContain("se graba, edita y publica sin ayuda");
+    expect(setupDe(kit).contenido).not.toContain("hay alguien que edita");
   });
 
   it("inserts the trends snippet for the chosen platform into the setup prompt", () => {
@@ -167,9 +193,9 @@ describe("generatePromptKit", () => {
     const snippet = SNIPPET_BY_PLATAFORMA.linkedin;
 
     for (const linea of [...snippet.formatos, ...snippet.ganchos, ...snippet.senales, ...snippet.evitar]) {
-      expect(kit.setup.contenido).toContain(linea);
+      expect(setupDe(kit).contenido).toContain(linea);
     }
-    expect(kit.setup.contenido).toContain(snippet.convencionesCopy);
+    expect(setupDe(kit).contenido).toContain(snippet.convencionesCopy);
     expect(kit.plataformaPrincipal).toBe("linkedin");
   });
 
@@ -189,8 +215,8 @@ describe("generatePromptKit", () => {
   it("asks the model to acknowledge the context and wait instead of generating content", () => {
     const kit = buildKit();
 
-    expect(kit.setup.contenido).toContain("NO escribas guiones");
-    expect(kit.setup.contenido).toContain("para y espera");
+    expect(setupDe(kit).contenido).toContain("NO escribas guiones");
+    expect(setupDe(kit).contenido).toContain("para y espera");
   });
 
   it("still works with a single formato, same as before", () => {
@@ -211,14 +237,14 @@ describe("generatePromptKit", () => {
   it("describes every selected formato in the setup, and none of the others", () => {
     const kit = buildKit({ formato: ["camara", "texto_carrusel"] });
 
-    expect(kit.setup.contenido).toContain("se graba a cámara mostrando la cara");
-    expect(kit.setup.contenido).toContain("no hay guion hablado");
-    expect(kit.setup.contenido).not.toContain("voz en off sobre imágenes");
+    expect(setupDe(kit).contenido).toContain("se graba a cámara mostrando la cara");
+    expect(setupDe(kit).contenido).toContain("no hay guion hablado");
+    expect(setupDe(kit).contenido).not.toContain("voz en off sobre imágenes");
   });
 
   it("gives every selected formato its own piece skeleton in the weekly block", () => {
     const kit = buildKit({ formato: ["camara", "texto_carrusel"] });
-    const semana1 = kit.semanas[0]?.contenido ?? "";
+    const semana1 = semanasDe(kit)[0]?.contenido ?? "";
 
     expect(semana1).toContain("Dirección de cámara");
     expect(semana1).toContain("Lámina 1");
@@ -231,8 +257,8 @@ describe("generatePromptKit", () => {
     // `**Formato:**` (bold) is the skeleton's own field, distinct from the
     // plain "Formato: Cámara." that restriccionesDuras always includes.
     expect(textoCompleto(single)).not.toContain("**Formato:**");
-    expect((multi.semanas[0]?.contenido ?? "")).toContain("**Formato:** Cámara");
-    expect((multi.semanas[0]?.contenido ?? "")).toContain(
+    expect((semanasDe(multi)[0]?.contenido ?? "")).toContain("**Formato:** Cámara");
+    expect((semanasDe(multi)[0]?.contenido ?? "")).toContain(
       "**Formato:** Texto / carrusel"
     );
   });
@@ -240,8 +266,8 @@ describe("generatePromptKit", () => {
   it("only relaxes the formato hard-constraint line, and only adds the mixed-structure quality check, when more than one formato is selected", () => {
     const single = buildKit({ formato: ["camara"] });
     const multi = buildKit({ formato: ["camara", "texto_carrusel"] });
-    const semana1Single = single.semanas[0]?.contenido ?? "";
-    const semana1Multi = multi.semanas[0]?.contenido ?? "";
+    const semana1Single = semanasDe(single)[0]?.contenido ?? "";
+    const semana1Multi = semanasDe(multi)[0]?.contenido ?? "";
 
     expect(semana1Single).toContain("Formato: Cámara.");
     expect(semana1Single).not.toContain("mezcla campos");
@@ -260,20 +286,20 @@ describe("generatePromptKit", () => {
       pruebaSocial: "200 alumnos y 30 testimonios en video",
     });
 
-    expect(kit.setup.contenido).toContain("Curso de finanzas para freelancers");
-    expect(kit.setup.contenido).toContain(
+    expect(setupDe(kit).contenido).toContain("Curso de finanzas para freelancers");
+    expect(setupDe(kit).contenido).toContain(
       "Creen que necesitan ganar más antes de ordenarse"
     );
-    expect(kit.setup.contenido).toContain("200 alumnos y 30 testimonios en video");
-    expect(kit.setup.contenido).toContain("<estrategia_de_venta>");
+    expect(setupDe(kit).contenido).toContain("200 alumnos y 30 testimonios en video");
+    expect(setupDe(kit).contenido).toContain("<estrategia_de_venta>");
   });
 
   it("forbids selling on the autoridad path", () => {
     const kit = buildKit({ objetivo: "autoridad" });
 
-    expect(kit.setup.contenido).toContain("<estrategia_de_autoridad>");
-    expect(kit.setup.contenido).not.toContain("<estrategia_de_venta>");
-    expect(kit.setup.contenido).toContain("no hay nada para vender");
+    expect(setupDe(kit).contenido).toContain("<estrategia_de_autoridad>");
+    expect(setupDe(kit).contenido).not.toContain("<estrategia_de_venta>");
+    expect(setupDe(kit).contenido).toContain("no hay nada para vender");
     expect(textoCompleto(kit)).toContain("En este plan no se vende nada");
   });
 
@@ -305,7 +331,7 @@ describe("generatePromptKit", () => {
 
   it("gives each week a distinct mission and only asks later weeks for continuity", () => {
     const kit = buildKit();
-    const [semana1, semana2] = kit.semanas;
+    const [semana1, semana2] = semanasDe(kit);
 
     expect(semana1?.contenido).not.toBe(semana2?.contenido);
     expect(semana1?.contenido).not.toContain("<continuidad>");
@@ -317,9 +343,9 @@ describe("generatePromptKit", () => {
     const unaSola = buildKit({ plataformas: ["tiktok"] });
     const varias = buildKit({ plataformas: ["tiktok", "linkedin"] });
 
-    expect(unaSola.setup.contenido).not.toContain("<plataformas_secundarias>");
-    expect(varias.setup.contenido).toContain("<plataformas_secundarias>");
-    expect(varias.setup.contenido).toContain("LinkedIn");
+    expect(setupDe(unaSola).contenido).not.toContain("<plataformas_secundarias>");
+    expect(setupDe(varias).contenido).toContain("<plataformas_secundarias>");
+    expect(setupDe(varias).contenido).toContain("LinkedIn");
     expect(textoCompleto(varias)).toContain("### Adaptación");
   });
 
