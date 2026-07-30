@@ -38,8 +38,25 @@ export interface PromptGrupo {
   unidad: "semana";
   /** 1-based. */
   numero: number;
-  /** "Semana 1" — el rótulo que ve el usuario. */
-  etiqueta: string;
+}
+
+/**
+ * El `Record` es lo que hace seguro sumar una unidad: en cuanto `unidad` gane
+ * un valor, esto deja de compilar hasta que se le dé nombre.
+ */
+const NOMBRE_DE_UNIDAD: Record<PromptGrupo["unidad"], string> = {
+  semana: "Semana",
+};
+
+/**
+ * «Semana 1» — el rótulo que ve el usuario.
+ *
+ * Se deriva y no se guarda en el bloque: guardado, el rótulo y el número
+ * podrían separarse, y como el agrupamiento se hace por tanda, esa separación
+ * partiría una semana en dos en pantalla.
+ */
+export function etiquetaDeGrupo(grupo: PromptGrupo): string {
+  return `${NOMBRE_DE_UNIDAD[grupo.unidad]} ${grupo.numero}`;
 }
 
 export interface PromptBlock {
@@ -69,8 +86,7 @@ export interface PromptKit {
 }
 
 export interface TandaDeBloques {
-  /** "Semana 1" */
-  etiqueta: string;
+  grupo: PromptGrupo;
   bloques: PromptBlock[];
 }
 
@@ -83,12 +99,24 @@ export function agruparBloques(kit: PromptKit): {
   const tandas: TandaDeBloques[] = [];
 
   for (const bloque of resto) {
-    if (!bloque.grupo) continue;
+    // Saltearlo en silencio lo haría desaparecer de la pantalla y de la
+    // descarga sin ninguna señal, y el usuario se llevaría un kit con un
+    // hueco. Solo el setup puede no pertenecer a una tanda.
+    if (!bloque.grupo) {
+      throw new Error(
+        `El bloque «${bloque.id}» no declara a qué tanda pertenece.`
+      );
+    }
+
     const ultima = tandas.at(-1);
-    if (ultima && ultima.etiqueta === bloque.grupo.etiqueta) {
+    if (
+      ultima &&
+      ultima.grupo.unidad === bloque.grupo.unidad &&
+      ultima.grupo.numero === bloque.grupo.numero
+    ) {
       ultima.bloques.push(bloque);
     } else {
-      tandas.push({ etiqueta: bloque.grupo.etiqueta, bloques: [bloque] });
+      tandas.push({ grupo: bloque.grupo, bloques: [bloque] });
     }
   }
 

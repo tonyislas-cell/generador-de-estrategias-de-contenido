@@ -17,3 +17,20 @@ import type { BloqueRequest } from "../plan";
 export interface PromptAdapter {
   build: (ctx: PromptContext, req: BloqueRequest) => string;
 }
+
+/**
+ * La rama imposible del `switch` de cada adaptador.
+ *
+ * El parámetro es `never`, así que en cuanto `BloqueRequest` gane un caso que
+ * un adaptador no cubra, la llamada deja de compilar **en ese adaptador**. Eso
+ * es lo que hace que agregar un tipo de bloque sea seguro: el compilador
+ * nombra los tres lugares que hay que escribir.
+ *
+ * El `throw` es para el caso de que un `req` inválido llegue en tiempo de
+ * ejecución saltándose los tipos; nunca debería pasar.
+ */
+export function bloqueSinCubrir(req: never): never {
+  throw new Error(
+    `Este adaptador no cubre el bloque ${JSON.stringify(req)}.`
+  );
+}

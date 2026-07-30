@@ -3,7 +3,13 @@ import { ADAPTERS } from "./adapters";
 import { buildContext } from "./context";
 import type { KitAnswers } from "./kit-answers";
 import { planDeBloques, type BloqueRequest } from "./plan";
-import type { Duracion, ModeloIA, PromptBlock, PromptKit } from "./types";
+import {
+  etiquetaDeGrupo,
+  type Duracion,
+  type ModeloIA,
+  type PromptBlock,
+  type PromptKit,
+} from "./types";
 
 /** Todo lo que define un bloque menos su contenido, que lo escribe el adaptador. */
 type Ficha = Pick<PromptBlock, "id" | "kind" | "grupo" | "descripcion"> & {
@@ -23,11 +29,13 @@ function fichaDe(req: BloqueRequest): Ficha {
   }
 
   const { semana } = req;
+  const grupo = { unidad: "semana", numero: semana } as const;
+
   return {
     id: `semana-${semana}`,
     kind: "semana",
-    grupo: { unidad: "semana", numero: semana, etiqueta: `Semana ${semana}` },
-    nombre: `Semana ${semana}`,
+    grupo,
+    nombre: etiquetaDeGrupo(grupo),
     descripcion:
       semana === 1
         ? "Pégalo después de que el modelo confirme el contexto, en la misma conversación."

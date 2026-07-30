@@ -10,6 +10,7 @@ import { generatePromptKit } from "@/lib/prompt-kit/generatePromptKit";
 import { resolvePlataformaPrincipal, toKitAnswers } from "@/lib/prompt-kit/kit-answers";
 import {
   agruparBloques,
+  etiquetaDeGrupo,
   DURACION_CONFIG,
   type Duracion,
   type ModeloIA,
@@ -69,18 +70,17 @@ function KitPanel({ kit }: { kit: PromptKit }) {
         <PromptBlockCard block={setup} />
       </section>
 
-      {tandas.map((tanda) => (
-        <section
-          key={tanda.etiqueta}
-          className="grid gap-3"
-          aria-label={tanda.etiqueta}
-        >
-          <Eyebrow>{tanda.etiqueta}</Eyebrow>
-          {tanda.bloques.map((bloque) => (
-            <PromptBlockCard key={bloque.id} block={bloque} />
-          ))}
-        </section>
-      ))}
+      {tandas.map((tanda) => {
+        const etiqueta = etiquetaDeGrupo(tanda.grupo);
+        return (
+          <section key={etiqueta} className="grid gap-3" aria-label={etiqueta}>
+            <Eyebrow>{etiqueta}</Eyebrow>
+            {tanda.bloques.map((bloque) => (
+              <PromptBlockCard key={bloque.id} block={bloque} />
+            ))}
+          </section>
+        );
+      })}
     </div>
   );
 }

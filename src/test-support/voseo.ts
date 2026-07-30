@@ -10,39 +10,68 @@
  * prompts se revisen contra la misma lista — el prompt es lo que más copy nuevo
  * suma y es el que nadie lee entero antes de publicar.
  */
-export const VOSEO = [
+
+/**
+ * Los límites de palabra se arman a mano, y no con `\b`.
+ *
+ * `\b` de JavaScript se define sobre `[A-Za-z0-9_]`, así que una vocal
+ * acentuada cuenta como carácter no-palabra: en `/\bmirá\b/`, el `\b` final
+ * exige un límite después de la `á` y solo lo encuentra si lo que sigue es una
+ * letra ASCII. Contra «Mirá el video» no engancha. Es decir: **todas las formas
+ * de imperativo voseante, que son justamente las que terminan en vocal
+ * acentuada, eran patrones muertos** — el guarda pasaba porque no podía fallar.
+ *
+ * Con `\p{L}` y la bandera `u` el límite sí abarca el alfabeto entero.
+ */
+const LIMITE_IZQUIERDO = "(?<![\\p{L}\\p{N}_])";
+const LIMITE_DERECHO = "(?![\\p{L}\\p{N}_])";
+
+const FORMAS = [
   // Presente de indicativo
-  /\bsos\b/i,
-  /\bvos\b/i,
-  /\btenés\b/i,
-  /\bpodés\b/i,
-  /\bquerés\b/i,
-  /\bsabés\b/i,
-  /\bhacés\b/i,
-  /\bvenís\b/i,
-  /\belegís\b/i,
-  /\bescribís\b/i,
-  /\bdecís\b/i,
-  /\bmirás\b/i,
+  "sos",
+  "vos",
+  "tenés",
+  "podés",
+  "querés",
+  "sabés",
+  "hacés",
+  "venís",
+  "elegís",
+  "escribís",
+  "decís",
+  "mirás",
   // Imperativo con pronombre enclítico, que en voseo pierde la tilde
-  /\binvitame\b/i,
-  /\bgenerame\b/i,
-  /\bcontame\b/i,
-  /\bmirame\b/i,
-  /\bdecime\b/i,
-  /\bfijate\b/i,
-  /\bmarcame\b/i,
-  // Imperativo suelto
-  /\bmirá\b/i,
-  /\bhacé\b/i,
-  /\bponé\b/i,
-  /\bempezá\b/i,
-  /\belegí\b/i,
-  /\bescribí\b/i,
-  /\bdejá\b/i,
-  /\bmarcá\b/i,
-  /\bcortá\b/i,
+  "invitame",
+  "generame",
+  "contame",
+  "mirame",
+  "decime",
+  "fijate",
+  "marcame",
+  "elegime",
+  // Imperativo suelto.
+  //
+  // Acá solo entran verbos de la primera conjugación y de la segunda, donde el
+  // imperativo voseante no choca con nada. Quedan deliberadamente afuera
+  // «escribí» y «elegí»: en los verbos de la tercera conjugación el imperativo
+  // voseante y el pretérito de primera persona se escriben igual, así que
+  // «mira cómo escribí mis respuestas» —tuteo impecable— daría positivo. Un
+  // guarda que grita sobre texto correcto termina desactivado.
+  "mirá",
+  "hacé",
+  "poné",
+  "empezá",
+  "dejá",
+  "marcá",
+  "cortá",
+  "usá",
+  "armá",
+  "contá",
 ];
+
+export const VOSEO = FORMAS.map(
+  (forma) => new RegExp(`${LIMITE_IZQUIERDO}${forma}${LIMITE_DERECHO}`, "iu")
+);
 
 /** Las cadenas que violan la regla, para que el mensaje de fallo diga cuáles. */
 export function conVoseo(cadenas: string[]): string[] {

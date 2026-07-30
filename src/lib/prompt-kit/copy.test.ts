@@ -99,6 +99,40 @@ describe("MECANICA_POR_PLATAFORMA", () => {
     }
   });
 
+  it("gives every short-form platform the script mechanics, and LinkedIn none", () => {
+    // Van en la hoja como sección aparte de las de plataforma porque son del
+    // formato, no de una red. Estuvieron un rato solo en Shorts, y ahí quien
+    // publicaba en Reels o TikTok nunca las recibía.
+    const cortas = ["tiktok", "instagram_reels", "youtube_shorts"] as const;
+
+    for (const plataforma of cortas) {
+      const etiquetas = MECANICA_POR_PLATAFORMA[plataforma].confirmado.map(
+        (d) => d.etiqueta
+      );
+      expect(etiquetas, plataforma).toContain("Gancho doble");
+      expect(etiquetas, plataforma).toContain(
+        "El cierre tiene tres opciones, no una"
+      );
+      expect(etiquetas, plataforma).toContain("Una sola llamada a la acción");
+    }
+
+    // LinkedIn no es video vertical corto.
+    expect(MECANICA_POR_PLATAFORMA.linkedin.confirmado).toEqual([]);
+  });
+
+  it("declares the three-layer keyword rule only where the sheet does", () => {
+    // La hoja dice «Aplica igual en Instagram y en TikTok» y no la extiende.
+    const declara = (plataforma: keyof typeof MECANICA_POR_PLATAFORMA) =>
+      MECANICA_POR_PLATAFORMA[plataforma].confirmado.some((d) =>
+        d.valor.includes("Las tres capas, o no cuenta")
+      );
+
+    expect(declara("tiktok")).toBe(true);
+    expect(declara("instagram_reels")).toBe(true);
+    expect(declara("youtube_shorts")).toBe(false);
+    expect(declara("linkedin")).toBe(false);
+  });
+
   it("leaves no blank labels or values behind", () => {
     for (const [plataforma, mecanica] of entradas) {
       for (const dato of mecanica.confirmado) {
@@ -170,7 +204,19 @@ describe("platform mechanics in the generated prompt", () => {
     const kit = texto("claude", "1_mes", { plataformas: ["instagram_reels"] });
 
     expect(kit).toContain("el tope es 5 por publicación desde enero de 2026");
-    for (const dato of MECANICA_POR_PLATAFORMA.tiktok.confirmado) {
+
+    // Solo lo que es propio de TikTok: las mecánicas de formato corto se
+    // comparten a propósito entre las tres verticales, así que aparecer en los
+    // dos lados no es una fuga.
+    const compartidas = new Set(
+      MECANICA_POR_PLATAFORMA.instagram_reels.confirmado.map((d) => d.valor)
+    );
+    const propiasDeTikTok = MECANICA_POR_PLATAFORMA.tiktok.confirmado.filter(
+      (d) => !compartidas.has(d.valor)
+    );
+
+    expect(propiasDeTikTok.length).toBeGreaterThan(0);
+    for (const dato of propiasDeTikTok) {
       expect(kit, "filtró mecánicas de TikTok").not.toContain(dato.valor);
     }
   });
@@ -178,10 +224,12 @@ describe("platform mechanics in the generated prompt", () => {
 
 describe("the trends seed agrees with the platform sheet", () => {
   /**
-   * El seed de tendencias y la hoja de plataforma se editan por separado y
-   * pueden contradecirse. Ya pasó: el seed recomendaba «entre 5 y 8» etiquetas
-   * después de que Instagram bajara el tope a 5. Este test fija el número en
-   * un solo lugar para que la próxima divergencia se note.
+   * El seed de tendencias, la migración que lo corrige y la hoja de plataforma
+   * se editan por separado y pueden contradecirse. Ya pasó: el seed recomendaba
+   * «entre 5 y 8» etiquetas después de que Instagram bajara el tope a 5. El
+   * número vive en tres capas —módulo, SQL y este test— porque una migración no
+   * puede importar TypeScript; esto lo clava para que la próxima divergencia se
+   * note acá antes que en el kit de alguien.
    */
   it("caps Instagram hashtags at five in the platform sheet", () => {
     const etiquetas = MECANICA_POR_PLATAFORMA.instagram_reels.confirmado.find(

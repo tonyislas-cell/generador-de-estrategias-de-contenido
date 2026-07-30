@@ -35,6 +35,48 @@ export interface MecanicaPlataforma {
 
 const REVISADA = "30 de julio de 2026";
 
+/**
+ * Mecánicas de guion que valen para cualquier vertical corto.
+ *
+ * La hoja las agrupa aparte de las secciones por plataforma, y con razón: no
+ * son de TikTok ni de Reels ni de Shorts, son del formato. Van compartidas
+ * entre las tres y no en una sola, que es donde estuvieron primero — ahí, quien
+ * publicaba en Reels o TikTok nunca las recibía.
+ *
+ * LinkedIn queda afuera: no es video vertical corto.
+ */
+const FORMATO_CORTO: MecanicaPlataforma["confirmado"] = [
+  {
+    etiqueta: "El ritmo decide la retención, no la estructura",
+    valor:
+      "cada beat existe o se corta. Gancho → conflicto → sueño → solución → CTA es una fórmula de copywriting publicitario, no una mecánica de plataforma: úsala como andamio para no quedarte en blanco y bórrala del entregable. Si un beat no aporta información ni tensión, son segundos que cuestan finalización.",
+  },
+  {
+    etiqueta: "Gancho doble",
+    valor:
+      "un primer impacto que frena el desplazamiento y, alrededor del segundo 5, un segundo estímulo que cambia la expectativa: un dato, un encuadre distinto, una mini revelación. Es la técnica documentada para el punto exacto donde la gente se va.",
+  },
+  {
+    etiqueta: "El cierre tiene tres opciones, no una",
+    valor:
+      "cortar en seco justo cuando cae el pago, que maximiza repeticiones; una llamada a la acción de 2 segundos; o cerrar en bucle, para que el arranque tenga sentido al repetirse. Elige una y justifícala.",
+  },
+  {
+    etiqueta: "Una sola llamada a la acción",
+    valor: "siempre. Con dos opciones, el espectador no elige ninguna.",
+  },
+];
+
+/**
+ * La regla de producción de la palabra clave. La hoja la declara para Instagram
+ * y para TikTok; no la extiende a las demás, así que acá tampoco.
+ */
+const PALABRA_CLAVE_EN_TRES_CAPAS = {
+  etiqueta: "Palabra clave en tres capas",
+  valor:
+    "la palabra clave por la que quieres aparecer se dice en voz alta en los primeros 3 segundos, se ve en pantalla en el primer cuadro y se escribe al inicio del pie. Las tres capas, o no cuenta.",
+} as const;
+
 export const MECANICA_POR_PLATAFORMA: Record<Plataforma, MecanicaPlataforma> = {
   instagram_reels: {
     revisada: REVISADA,
@@ -72,8 +114,10 @@ export const MECANICA_POR_PLATAFORMA: Record<Plataforma, MecanicaPlataforma> = {
       {
         etiqueta: "Descalifica",
         valor:
-          "una marca de agua de otra plataforma saca la pieza de Explora y de recomendaciones.",
+          "una marca de agua de otra plataforma saca la pieza de Explora y de recomendaciones. Se reporta además que 10 o más reposteos en 30 días sacan la cuenta entera de recomendaciones.",
       },
+      PALABRA_CLAVE_EN_TRES_CAPAS,
+      ...FORMATO_CORTO,
     ],
     discutido: [
       "La zona segura exacta: las fuentes no coinciden en los píxeles. Lo único consistente es la banda central, así que la regla práctica es no poner texto ni en el tercio superior ni en el inferior.",
@@ -120,6 +164,7 @@ export const MECANICA_POR_PLATAFORMA: Record<Plataforma, MecanicaPlataforma> = {
         valor:
           "publicar un comentario propio con una o dos frases de contexto con palabras clave, y fijarlo arriba, suma texto indexable y suma a la métrica de comentarios.",
       },
+      ...FORMATO_CORTO,
     ],
     discutido: [
       "El 70% de finalización como umbral para viralizar: la dirección es correcta —la finalización manda— pero el número sale de blogs de crecimiento, no de TikTok.",
@@ -135,16 +180,7 @@ export const MECANICA_POR_PLATAFORMA: Record<Plataforma, MecanicaPlataforma> = {
         valor:
           "el rendimiento de uno ya no arrastra al otro. No asumas que un Short que funciona empuja al canal largo.",
       },
-      {
-        etiqueta: "Gancho doble",
-        valor:
-          "un primer impacto que frena el desplazamiento y, alrededor del segundo 5, un segundo estímulo que cambia la expectativa: un dato, un encuadre distinto, una mini revelación. Es la técnica documentada para el punto exacto donde la gente se va.",
-      },
-      {
-        etiqueta: "El cierre tiene tres opciones",
-        valor:
-          "cortar en seco justo cuando cae el pago, que maximiza repeticiones; una llamada a la acción de 2 segundos; o cerrar en bucle, para que el arranque tenga sentido al repetirse. Elige una y justifícala.",
-      },
+      ...FORMATO_CORTO,
     ],
     discutido: [],
   },

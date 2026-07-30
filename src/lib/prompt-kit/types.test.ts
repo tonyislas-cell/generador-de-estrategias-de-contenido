@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { agruparBloques, type PromptBlock, type PromptKit } from "./types";
+import {
+  agruparBloques,
+  etiquetaDeGrupo,
+  type PromptBlock,
+  type PromptKit,
+} from "./types";
 
 function bloque(
   id: string,
@@ -15,8 +20,7 @@ function bloque(
   };
 }
 
-const semana = (numero: number) =>
-  ({ unidad: "semana", numero, etiqueta: `Semana ${numero}` }) as const;
+const semana = (numero: number) => ({ unidad: "semana", numero }) as const;
 
 function kit(bloques: [PromptBlock, ...PromptBlock[]]): PromptKit {
   return {
@@ -47,7 +51,7 @@ describe("agruparBloques", () => {
       ])
     );
 
-    expect(tandas.map((tanda) => tanda.etiqueta)).toEqual([
+    expect(tandas.map((tanda) => etiquetaDeGrupo(tanda.grupo))).toEqual([
       "Semana 1",
       "Semana 2",
     ]);
@@ -56,6 +60,14 @@ describe("agruparBloques", () => {
       "semana-1-b",
     ]);
     expect(tandas[1].bloques.map((b) => b.id)).toEqual(["semana-2-a"]);
+  });
+
+  it("refuses to drop a block that declares no tanda", () => {
+    // Saltearlo lo haría desaparecer de la pantalla y de la descarga sin
+    // ninguna señal, y el usuario se llevaría un kit con un hueco.
+    expect(() =>
+      agruparBloques(kit([bloque("setup"), bloque("huerfano")]))
+    ).toThrow(/huerfano/);
   });
 
   it("returns no tandas when the kit is only a setup block", () => {

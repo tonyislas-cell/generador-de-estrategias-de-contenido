@@ -134,9 +134,9 @@ describe("generatePromptKit", () => {
     const kit = buildKit();
 
     expect(setupDe(kit).grupo).toBeUndefined();
-    expect(semanasDe(kit).map((bloque) => bloque.grupo?.etiqueta)).toEqual([
-      "Semana 1",
-      "Semana 2",
+    expect(semanasDe(kit).map((bloque) => bloque.grupo)).toEqual([
+      { unidad: "semana", numero: 1 },
+      { unidad: "semana", numero: 2 },
     ]);
   });
 

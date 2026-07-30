@@ -1,7 +1,7 @@
 import type { PromptContext } from "../context";
 import type { MisionSemana } from "../misiones";
 import { bullets, lines, present, sections } from "./prose";
-import type { PromptAdapter } from "./types";
+import { bloqueSinCubrir, type PromptAdapter } from "./types";
 import {
   esqueletoDePieza,
   type DialectoDeSalida,
@@ -443,6 +443,17 @@ function buildSemana(ctx: PromptContext, semana: number): string {
 }
 
 export const chatgptAdapter: PromptAdapter = {
-  build: (ctx, req) =>
-    req.kind === "setup" ? buildSetup(ctx) : buildSemana(ctx, req.semana),
+  build: (ctx, req) => {
+    // `switch` con rama por defecto imposible, y no un ternario: cuando entre
+    // un tipo de bloque nuevo, esto tiene que dejar de compilar acá. Un
+    // ternario lo mandaría en silencio a la rama equivocada.
+    switch (req.kind) {
+      case "setup":
+        return buildSetup(ctx);
+      case "semana":
+        return buildSemana(ctx, req.semana);
+      default:
+        return bloqueSinCubrir(req);
+    }
+  },
 };

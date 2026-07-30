@@ -18,7 +18,7 @@ function buildKit(overrides: Partial<PromptKit> = {}): PromptKit {
       {
         id: "semana-1",
         kind: "semana",
-        grupo: { unidad: "semana", numero: 1, etiqueta: "Semana 1" },
+        grupo: { unidad: "semana", numero: 1 },
         titulo: "Prompt 2 — Semana 1",
         descripcion: "Pégalo después de que el modelo confirme el contexto.",
         contenido: "Contenido de la semana 1 de Claude.",
@@ -26,7 +26,7 @@ function buildKit(overrides: Partial<PromptKit> = {}): PromptKit {
       {
         id: "semana-2",
         kind: "semana",
-        grupo: { unidad: "semana", numero: 2, etiqueta: "Semana 2" },
+        grupo: { unidad: "semana", numero: 2 },
         titulo: "Prompt 3 — Semana 2",
         descripcion: "Pégalo cuando ya tengas los guiones de la Semana 1.",
         contenido: "Contenido de la semana 2 de Claude.",
