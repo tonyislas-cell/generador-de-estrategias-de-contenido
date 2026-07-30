@@ -381,6 +381,39 @@ describe("cross-model isolation", () => {
     }
   });
 
+  /**
+   * La guarda que hace segura la extracción de `plantillas.ts`: el esqueleto
+   * del entregable se escribe una sola vez para los tres modelos, así que un
+   * `##` o un `<tag>` tipeado ahí por descuido se filtraría a los tres kits.
+   * El test de marcadores de arriba mira tres cadenas puntuales; éste mira la
+   * sintaxis entera.
+   */
+  it("keeps each dialect's syntax out of the models that don't use it", () => {
+    const texto = (modelo: ModeloIA) =>
+      textoCompleto(buildKit({ formato: ["camara", "texto_carrusel"] }, "14_dias", modelo));
+
+    const ETIQUETA_XML = /<\/?[a-z_]+>/;
+    const ENCABEZADO_MARKDOWN = /^#{1,6} /m;
+    const REGLA_NUMERADA = /^Regla \d+ —/m;
+    const CAMPO_EN_LISTA = /^- \*\*[^*]+:\*\*/m;
+
+    // Las etiquetas son la estructura de Claude y de nadie más.
+    expect(texto("claude")).toMatch(ETIQUETA_XML);
+    expect(texto("chatgpt")).not.toMatch(ETIQUETA_XML);
+    expect(texto("gemini")).not.toMatch(ETIQUETA_XML);
+
+    // Gemini es plano: ni encabezados ni campos como ítem de lista.
+    expect(texto("gemini")).not.toMatch(ENCABEZADO_MARKDOWN);
+    expect(texto("gemini")).not.toMatch(CAMPO_EN_LISTA);
+    expect(texto("gemini")).toMatch(REGLA_NUMERADA);
+
+    // Los campos como ítem de lista son de ChatGPT; las reglas numeradas, no.
+    expect(texto("chatgpt")).toMatch(CAMPO_EN_LISTA);
+    expect(texto("chatgpt")).not.toMatch(REGLA_NUMERADA);
+    expect(texto("claude")).not.toMatch(CAMPO_EN_LISTA);
+    expect(texto("claude")).not.toMatch(REGLA_NUMERADA);
+  });
+
   it("keeps the modelo field on the kit consistent with what was requested", () => {
     expect(buildKit({}, "14_dias", "chatgpt").modelo).toBe("chatgpt");
     expect(buildKit({}, "14_dias", "gemini").modelo).toBe("gemini");

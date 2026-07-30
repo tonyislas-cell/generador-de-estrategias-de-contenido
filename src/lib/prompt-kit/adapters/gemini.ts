@@ -2,7 +2,10 @@ import type { PromptContext } from "../context";
 import type { MisionSemana } from "../misiones";
 import { bullets, lines, present, sections } from "./prose";
 import type { PromptAdapter } from "./types";
-import type { Formato } from "@/lib/wizard/types";
+import {
+  esqueletoDePieza,
+  type DialectoDeSalida,
+} from "../plantillas";
 
 /**
  * Adaptador de Gemini.
@@ -22,6 +25,23 @@ import type { Formato } from "@/lib/wizard/types";
  *   encabezados markdown de ChatGPT: sin tags ni `#`/`##`, solo rótulos en
  *   negrita seguidos de su contenido.
  */
+
+/**
+ * Cómo decora Gemini las líneas del entregable que pide.
+ *
+ * Estructura plana, coherente con el resto del adaptador: sin etiquetas, sin
+ * `#` y sin negritas dentro del entregable. Cada campo cierra en punto porque
+ * acá todo se lee como una oración; el `valor` que ya viene con punto no lleva
+ * otro.
+ */
+const SALIDA: DialectoDeSalida = {
+  tituloDePieza: (texto) => texto,
+  campo: (nombre, valor) =>
+    `${nombre}: ${valor}${valor.endsWith(".") ? "" : "."}`,
+  nombreDeCampo: (nombre) => `"${nombre}:"`,
+  cita: (_etiqueta, prosa) => prosa,
+  rotulo: (texto) => texto,
+};
 
 // ---------------------------------------------------------------- setup
 
@@ -257,80 +277,6 @@ function antesDeEscribir(ctx: PromptContext): string {
   ].join("\n");
 }
 
-/** El esqueleto de una pieza en un formato dado — la rama donde más se nota el formato elegido. */
-function esqueletoParaFormato(formato: Formato): string {
-  if (formato === "texto_carrusel") {
-    return [
-      "Pieza {n} — {título interno corto}",
-      "Publicar: {día}.",
-      "Ángulo: una línea con qué creencia toca o qué tensión abre.",
-      "Lámina 1 (portada): diez palabras como máximo. Es el gancho y es lo único que se ve en el feed.",
-      "Láminas 2 a N: numeradas, veinticinco palabras como máximo por lámina, una idea por lámina.",
-      "Lámina del giro: marca en cuál cambia la idea.",
-      "Lámina final: la llamada a la acción.",
-      "Texto de la publicación: según las convenciones de texto de arriba.",
-      "Por qué funciona: una línea, honesta.",
-      "",
-      "No escribas guion hablado ni indicaciones de cámara: acá no hay video.",
-    ].join("\n");
-  }
-
-  if (formato === "faceless") {
-    return [
-      "Pieza {n} — {título interno corto}",
-      "Publicar: {día}.",
-      "Ángulo: una línea con qué creencia toca o qué tensión abre.",
-      "Gancho (0-3 s): lo que dice la voz en off, palabra por palabra.",
-      "Texto en pantalla del gancho: siete palabras como máximo.",
-      "Guion de voz en off: bloques con su marca de tiempo.",
-      "Plan de imágenes: qué se ve en cada bloque — captura de pantalla, material de archivo, gráfico, mano en cuadro. Concreto y grabable con lo que tengo.",
-      "Ritmo: cada cuántos segundos cambia la imagen.",
-      "Llamada a la acción: una sola acción.",
-      "Texto de la publicación: según las convenciones de texto de arriba.",
-      "Por qué funciona: una línea, honesta.",
-      "",
-      "El gancho tiene que funcionar sin cara: si depende de una expresión o de la energía de alguien hablando a cámara, no sirve.",
-    ].join("\n");
-  }
-
-  return [
-    "Pieza {n} — {título interno corto}",
-    "Publicar: {día}.",
-    "Ángulo: una línea con qué creencia toca o qué tensión abre.",
-    "Gancho (0-3 s): lo que se dice, palabra por palabra.",
-    "Texto en pantalla del gancho: siete palabras como máximo.",
-    "Guion: bloques con su marca de tiempo.",
-    "Dirección de cámara: encuadre, energía, dónde cortar, y qué gesto o acción concreta se hace durante el gancho.",
-    "Texto en pantalla del resto: solo lo imprescindible.",
-    "Llamada a la acción: una sola acción.",
-    "Texto de la publicación: según las convenciones de texto de arriba.",
-    "Por qué funciona: una línea, honesta.",
-  ].join("\n");
-}
-
-/** Inserta la línea "Formato:" justo después del título, para que el esqueleto muestre dónde va el campo que la instrucción de arriba pide. */
-function declararFormatoEnEsqueleto(esqueleto: string, etiqueta: string): string {
-  const [titulo, ...resto] = esqueleto.split("\n");
-  return [titulo, `Formato: ${etiqueta}.`, ...resto].join("\n");
-}
-
-/** Con un solo formato, el esqueleto de siempre. Con más de uno, cada pieza declara cuál usa. */
-function esqueletoDePieza(ctx: PromptContext): string {
-  if (ctx.formatos.length === 1) {
-    return esqueletoParaFormato(ctx.formatos[0].value);
-  }
-
-  return lines([
-    `Elegiste más de un formato de producción. Cada pieza declara con cuál se hizo, con la línea "Formato:" al principio, y sigue exactamente la estructura de esa sección — no mezcles campos de un formato con otro. Repártelas entre los formatos elegidos según lo que mejor sirva a cada idea; no hace falta usar todos cada semana.`,
-    "",
-    ...ctx.formatos.flatMap((f, i) => [
-      i === 0 ? null : "",
-      `Si la pieza es ${f.label}:`,
-      declararFormatoEnEsqueleto(esqueletoParaFormato(f.value), f.label),
-    ]),
-  ]);
-}
-
 function formatoDeSalida(
   ctx: PromptContext,
   semana: number,
@@ -358,7 +304,7 @@ function formatoDeSalida(
     "",
     `Después, las ${ctx.piezasPorSemanaLabel}, cada una con ${ctx.formatos.length === 1 ? "esta estructura exacta" : "la estructura que le corresponda según su formato"}:`,
     "",
-    esqueletoDePieza(ctx),
+    esqueletoDePieza(ctx, SALIDA),
     adaptacion,
     "",
     "Termina con este bloque, literal:",
