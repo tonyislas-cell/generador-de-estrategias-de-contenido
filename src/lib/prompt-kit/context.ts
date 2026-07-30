@@ -20,7 +20,7 @@ import {
   MECANICA_POR_PLATAFORMA,
   type MecanicaPlataforma,
 } from "./plataforma-mecanica";
-import type { KitAnswers } from "./kit-answers";
+import { tieneInventario, type KitAnswers } from "./kit-answers";
 import { DURACION_CONFIG, type Duracion } from "./types";
 
 /**
@@ -68,6 +68,11 @@ export interface PromptContext {
   requiereAgrupado: boolean;
 
   misiones: MisionDeTanda[];
+
+  /** Si es `false`, el prompt no menciona el inventario en ningún lado. */
+  hayInventario: boolean;
+  /** Los campos del inventario que sí se llenaron, listos para listar. */
+  inventario: { etiqueta: string; valor: string }[];
 }
 
 export function buildContext(
@@ -127,6 +132,17 @@ export function buildContext(
 
     // El arco depende del tipo de kit: uno avanza por semanas y el otro por
     // videos, y cada tanda tiene su propio trabajo dentro del plan.
+    hayInventario: tieneInventario(answers.inventario),
+    inventario: (
+      [
+        ["Herramientas que uso, por nombre exacto", answers.inventario.herramientas],
+        ["Números que puedo decir en cámara sin dudar", answers.inventario.numeros],
+        ["Frases que mi audiencia dice literal", answers.inventario.frasesAudiencia],
+        ["Errores míos que puedo contar con detalle", answers.inventario.errores],
+        ["Datos que NO tengo y no debo simular", answers.inventario.datosQueNoTengo],
+      ] as [string, string | null][]
+    ).flatMap(([etiqueta, valor]) => (valor ? [{ etiqueta, valor }] : [])),
+
     misiones:
       tipoDeKit === "youtube_largo"
         ? getMisionesDeVideo(answers.objetivo, duracion)

@@ -152,6 +152,30 @@ function capacidadDeProduccion(ctx: PromptContext): string {
   ]);
 }
 
+
+/**
+ * Los datos concretos del mundo del creador.
+ *
+ * Solo se emite si hay algo. Pedirle al modelo que use un inventario vacío
+ * produce guiones con huecos, que es peor que no pedirlo: sin esta sección
+ * sigue vigente el mecanismo de [DATO A COMPLETAR].
+ */
+function inventario(ctx: PromptContext): string | null {
+  if (!ctx.hayInventario) return null;
+
+  const privacidad = ctx.answers.inventario.limitesPrivacidad;
+
+  return lines([
+    "<inventario>",
+    "Datos reales de mi mundo. Son los únicos que puedes dar por ciertos, y cada pieza tiene que usar al menos uno, textual.",
+    bullets(ctx.inventario.map((d) => `${d.etiqueta}: ${d.valor}`)),
+    privacidad
+      ? `<limites_de_privacidad>Esto no se muestra, no se nombra y no se describe nunca, en ninguna pieza: ${privacidad}</limites_de_privacidad>`
+      : null,
+    "</inventario>",
+  ]);
+}
+
 /**
  * Cómo funciona la plataforma, separado de qué está rindiendo.
  *
@@ -229,7 +253,9 @@ function reglasDeEscritura(ctx: PromptContext): string {
   return [
     "<reglas_de_escritura>",
     `1. Prueba del reemplazo. Si puedes cambiar «${ctx.answers.nicho}» por cualquier otro rubro y el guion sigue teniendo sentido, el guion está mal. Reescríbelo hasta que solo funcione para esta audiencia.`,
-    "2. Especificidad obligatoria. Cada pieza tiene al menos un detalle concreto del mundo de esta audiencia: una herramienta con nombre, un número, un momento del día, una frase que esa persona realmente dice. Nada de «muchos», «la mayoría» ni «hoy en día».",
+    ctx.hayInventario
+      ? "2. Especificidad obligatoria. Cada pieza usa al menos un dato de <inventario>, textual, sin redondearlo ni adornarlo. Nada de «muchos», «la mayoría» ni «hoy en día». Si una pieza no puede sostenerse con lo que hay en el inventario, cambia el enfoque de la pieza en vez de entregarla con huecos."
+      : "2. Especificidad obligatoria. Cada pieza tiene al menos un detalle concreto del mundo de esta audiencia: una herramienta con nombre, un número, un momento del día, una frase que esa persona realmente dice. Nada de «muchos», «la mayoría» ni «hoy en día».",
     "3. Una idea por pieza. Si una pieza tiene dos ideas, pártela en dos.",
     "4. El gancho es una promesa, no un anuncio. Prohibido presentar la pieza. Se entra directo a la afirmación, la escena o el dato.",
     "5. Escribe como hablo yo. Mira cómo escribí mis respuestas más arriba: registro, nivel de formalidad, si trato de tú o de usted. Imítalo. No lo neutralices.",
@@ -324,6 +350,7 @@ function buildSetup(ctx: PromptContext): string {
     contextoDelCreador(ctx),
     plataformasSecundarias(ctx),
     oferta(ctx),
+    inventario(ctx),
     capacidadDeProduccion(ctx),
     mecanicaDePlataforma(ctx),
     tendencias(ctx),

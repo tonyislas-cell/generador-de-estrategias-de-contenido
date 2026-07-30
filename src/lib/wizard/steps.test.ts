@@ -13,6 +13,7 @@ describe("getVisibleSteps", () => {
       "formato",
       "recursos",
       "gancho",
+      "inventario",
     ]);
   });
 
@@ -28,6 +29,7 @@ describe("getVisibleSteps", () => {
       "formato",
       "recursos",
       "gancho",
+      "inventario",
       "oferta",
     ]);
   });
@@ -38,7 +40,7 @@ describe("getVisibleSteps", () => {
     const steps = getVisibleSteps(answers);
 
     expect(steps.map((s) => s.id)).not.toContain("oferta");
-    expect(steps).toHaveLength(6);
+    expect(steps).toHaveLength(7);
   });
 
   it("drops the oferta step immediately if objetivo changes away from lanzamiento", () => {

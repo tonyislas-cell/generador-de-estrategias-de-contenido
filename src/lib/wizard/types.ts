@@ -73,6 +73,17 @@ export interface WizardAnswers {
   // Capa 5 — Voz y estilo de gancho
   estilosGancho?: EstiloGancho[];
 
+  // Capa 5b — Inventario. Todo opcional: es la palanca más fuerte contra el
+  // guion genérico, pero son seis cajas de texto libre y esta es una
+  // herramienta gratuita. Quien las llena obtiene piezas con datos textuales
+  // suyos; quien las saltea sigue con el mecanismo de [DATO A COMPLETAR].
+  herramientas?: string;
+  numeros?: string;
+  frasesAudiencia?: string;
+  errores?: string;
+  datosQueNoTengo?: string;
+  limitesPrivacidad?: string;
+
   // Capa 6 — Oferta/CTA (solo si objetivo === "lanzamiento")
   oferta?: string;
   objeciones?: string;
@@ -86,6 +97,7 @@ export type StepId =
   | "formato"
   | "recursos"
   | "gancho"
+  | "inventario"
   | "oferta";
 
 /** Dónde está parado el usuario: en un paso, en el resumen, eligiendo modelo(s), o en el kit. */

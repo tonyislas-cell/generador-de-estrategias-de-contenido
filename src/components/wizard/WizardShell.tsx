@@ -9,6 +9,7 @@ import type { StepId } from "@/lib/wizard/types";
 import { DURACION_OPTIONS } from "@/lib/prompt-kit/types";
 import { MODELO_OPTIONS } from "@/lib/prompt-kit/adapters";
 import { Step0Tipo } from "./Step0Tipo";
+import { StepInventario } from "./StepInventario";
 import { Step1Contexto } from "./Step1Contexto";
 import { Step2Objetivo } from "./Step2Objetivo";
 import { Step3Formato } from "./Step3Formato";
@@ -27,6 +28,7 @@ const STEP_COMPONENTS: Record<StepId, ComponentType<StepProps>> = {
   objetivo: Step2Objetivo,
   formato: Step3Formato,
   recursos: Step4Recursos,
+  inventario: StepInventario,
   gancho: Step5Gancho,
   oferta: Step6Oferta,
 };

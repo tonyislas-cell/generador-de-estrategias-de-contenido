@@ -83,6 +83,18 @@ export function getSummaryItems(answers: WizardAnswers): SummaryItem[] {
     });
   }
 
+  const inventario: [string, string | undefined][] = [
+    ["Herramientas", answers.herramientas],
+    ["Números que puedo decir", answers.numeros],
+    ["Frases de mi audiencia", answers.frasesAudiencia],
+    ["Errores propios", answers.errores],
+    ["Datos que no tengo", answers.datosQueNoTengo],
+    ["Límites de privacidad", answers.limitesPrivacidad],
+  ];
+  for (const [label, value] of inventario) {
+    if (value) items.push({ label, value });
+  }
+
   if (visibleStepIds.has("oferta")) {
     if (answers.oferta) items.push({ label: "Qué vendes", value: answers.oferta });
     if (answers.objeciones) {

@@ -20,6 +20,8 @@ interface KitAnswersBase {
   etapaCuenta: EtapaCuenta;
   /** `null` cuando la persona no completó el campo — es opcional, a diferencia del resto. */
   contextoMarca: string | null;
+  /** Todo opcional. `null` en cada campo que quedó vacío. */
+  inventario: Inventario;
   formato: [Formato, ...Formato[]];
   equipo: [Equipo, ...Equipo[]];
   tiempoPorPieza: TiempoPorPieza;
@@ -44,6 +46,27 @@ export type KitAnswers =
       objeciones: string;
       pruebaSocial: string;
     });
+
+/**
+ * Los datos concretos del mundo del creador.
+ *
+ * Cada campo es `null` si quedó vacío, y el prompt solo emite la sección si
+ * hay al menos uno: pedirle al modelo que use un inventario vacío produce
+ * guiones con huecos, que es peor que no pedirlo.
+ */
+export interface Inventario {
+  herramientas: string | null;
+  numeros: string | null;
+  frasesAudiencia: string | null;
+  errores: string | null;
+  datosQueNoTengo: string | null;
+  limitesPrivacidad: string | null;
+}
+
+/** `true` si hay algo que valga la pena inyectar. */
+export function tieneInventario(inventario: Inventario): boolean {
+  return Object.values(inventario).some((valor) => valor !== null);
+}
 
 function trimmed(value: string | undefined): string | null {
   const result = value?.trim();
@@ -90,6 +113,14 @@ export function toKitAnswers(answers: WizardAnswers): KitAnswers | null {
     tono,
     etapaCuenta,
     contextoMarca: trimmed(answers.contextoMarca),
+    inventario: {
+      herramientas: trimmed(answers.herramientas),
+      numeros: trimmed(answers.numeros),
+      frasesAudiencia: trimmed(answers.frasesAudiencia),
+      errores: trimmed(answers.errores),
+      datosQueNoTengo: trimmed(answers.datosQueNoTengo),
+      limitesPrivacidad: trimmed(answers.limitesPrivacidad),
+    },
     formato,
     equipo,
     tiempoPorPieza,

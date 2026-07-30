@@ -144,6 +144,26 @@ function capacidadDeProduccion(ctx: PromptContext): string {
   ]);
 }
 
+
+/**
+ * Los datos concretos del mundo del creador. Solo se emite si hay algo:
+ * pedirle al modelo que use un inventario vacío produce guiones con huecos.
+ */
+function inventario(ctx: PromptContext): string | null {
+  if (!ctx.hayInventario) return null;
+
+  const privacidad = ctx.answers.inventario.limitesPrivacidad;
+
+  return lines([
+    "## Mi inventario",
+    "Datos reales de mi mundo. Son los únicos que puedes dar por ciertos, y cada pieza tiene que usar al menos uno, textual.",
+    bullets(ctx.inventario.map((d) => `**${d.etiqueta}:** ${d.valor}`)),
+    privacidad
+      ? `**Límites de privacidad:** esto no se muestra, no se nombra y no se describe nunca, en ninguna pieza: ${privacidad}`
+      : null,
+  ]);
+}
+
 /**
  * Cómo funciona la plataforma, separado de qué está rindiendo.
  *
@@ -302,6 +322,7 @@ function buildSetup(ctx: PromptContext): string {
     contextoDelCreador(ctx),
     plataformasSecundarias(ctx),
     oferta(ctx),
+    inventario(ctx),
     capacidadDeProduccion(ctx),
     mecanicaDePlataforma(ctx),
     tendencias(ctx),

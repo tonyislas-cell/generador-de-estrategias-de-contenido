@@ -58,6 +58,13 @@ const STEP_DEFINITIONS: StepDefinition[] = [
     isAnswered: (a) => hasItems(a.estilosGancho),
   },
   {
+    id: "inventario",
+    title: "Tu inventario",
+    // Salteable a propósito: el paso aporta muchísimo pero no puede ser un
+    // muro antes de ver el primer resultado.
+    isAnswered: () => true,
+  },
+  {
     id: "oferta",
     title: "Oferta / CTA",
     isAnswered: (a) =>
