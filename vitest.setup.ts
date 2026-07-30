@@ -33,6 +33,25 @@ class IntersectionObserverStub implements IntersectionObserver {
 
 vi.stubGlobal("IntersectionObserver", IntersectionObserverStub);
 
+// jsdom ships no matchMedia either, and the landing's parallax background reads
+// `(pointer: fine)` and `(prefers-reduced-motion)` on mount. Everything reports
+// false by default, so components take their quietest branch under test; the
+// parallax's own test overrides this per case to exercise the others.
+vi.stubGlobal(
+  "matchMedia",
+  (query: string): MediaQueryList =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }) as MediaQueryList
+);
+
 // No .env.local in the test environment — these are fake values so
 // src/lib/admin-auth.ts's eager env checks don't throw on import. 64 hex
 // chars (32 bytes) satisfies jose's HS256 minimum key length.
